@@ -5,11 +5,11 @@
   --card: #222226;
   --card-hover: #29292e;
   --input: #141417;
-  --border: rgba(255, 255, 255, 0.1);
-  --border-strong: rgba(255, 255, 255, 0.16);
-  --text: #f2f2f5;
-  --muted: #bdbdc5;
-  --faint: #9d9da7;
+  --border: rgba(255, 255, 255, 0.12);
+  --border-strong: rgba(255, 255, 255, 0.2);
+  --text: #fafafc;
+  --muted: #d2d2d9;
+  --faint: #b5b5bf;
   --accent: #73BFFF;
   --accent2: #4FA6EE;
   --accent-soft: rgba(115, 191, 255, 0.12);
@@ -113,7 +113,7 @@ a:hover {
   color: var(--accent);
 }
 .small {
-  font-size: 12px;
+  font-size: 12.5px;
 }
 .num {
   font-variant-numeric: tabular-nums;
@@ -281,11 +281,11 @@ input[type="checkbox"] {
   flex-shrink: 0;
   align-items: center;
   gap: 4px;
-  font-size: 11px;
+  font-size: 11.5px;
   font-weight: 600;
   padding: 2px 7px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.09);
   color: var(--muted);
   letter-spacing: 0.02em;
 }
@@ -390,7 +390,7 @@ table.list {
 }
 table.list th {
   text-align: left;
-  font-size: 11.5px;
+  font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--faint);
