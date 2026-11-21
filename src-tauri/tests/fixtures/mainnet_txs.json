@@ -1,0 +1,808 @@
+[
+ {
+  "id": "edc4fac108438ea68a7ce42ce6ae129d78de07e948bf7c53a6e46002df5088fa",
+  "blockId": "0a3e569c38b73cee78993e4db936290f9cee8a542bb76b83d13a5650e1a6cd9b",
+  "version": 2,
+  "type": 0,
+  "typeGroup": 1,
+  "amount": "13790000000",
+  "fee": "10000000",
+  "sender": "AdTpsHetdwjqiYvUoR5FeFJfqQSNqPamjb",
+  "senderPublicKey": "021d626512d605358ac2b57a6286d2dd3114c0a19dc6d8dd56c889a76c21d33941",
+  "recipient": "AZhajPPzbRiyiiddrbran5DhhybjR4oax7",
+  "signature": "3045022100b6fa80548f3e04633d480fcdb293eb9d655d0a13da2471b5c5e41e842b14daee02200c8710671565c9a48271ac19e3f9b57416b3cd6f93e765d1b8c5a899100fbeda",
+  "confirmations": 107,
+  "timestamp": {
+   "epoch": 305190008,
+   "unix": 1795291208,
+   "human": "2026-11-21T20:00:08.000Z"
+  },
+  "nonce": "667"
+ },
+ {
+  "id": "7f31a4e6f200259159bc6b7cc45010a169561acacecc8275b16be9cb78d054ed",
+  "blockId": "d5a83c1f686eb03508264c74a970a8ae490722f73fd85c7e040abb01e91617d0",
+  "version": 2,
+  "type": 0,
+  "typeGroup": 1,
+  "amount": "10600000000",
+  "fee": "10000000",
+  "sender": "ATK14wxyYxbELq2b91bAfBY8Vmh9J6MDej",
+  "senderPublicKey": "02cebaa07d39ccc831445b4b3e5bce69a4db63d8f44de76d4f7d5e6c219b637396",
+  "recipient": "ARyNwFj7nQUCip5gYt4gSWG6F8evL93eBL",
+  "signature": "3045022100c8311ac18c292827384a8ad11e95a1196e3385b8134eaf78f87092c24d36cee502207cbd1a38430e9ba28e7ce9cd9c6ee7956ce3650cac744ea6517404116245f23a",
+  "signSignature": "30440220533a674d4a796e5c7947c43bb7a8199d430455ebc5cc8e5f1ffb0ded09f5962302203df39de322713a08083eed9caee57e841e44d0aa78d64eb0d24ce7aed6f8b663",
+  "vendorField": "Delegate share",
+  "confirmations": 779,
+  "timestamp": {
+   "epoch": 305184632,
+   "unix": 1795285832,
+   "human": "2026-11-21T18:30:32.000Z"
+  },
+  "nonce": "34444",
+  "_secondPublicKey": "02888fe1157b9959fb9bfa483460ef7b1522dccec889f409c6709345c3bc412c49"
+ },
+ {
+  "id": "467fb14729717b2bddf94941d386587a255e57a551087cb52b6f939a6aef39bf",
+  "blockId": "15175d739d7bb0955a4e051c1eb180a09d0bea5826fdfd30a52c1ccfcd76004a",
+  "version": 2,
+  "type": 0,
+  "typeGroup": 1,
+  "amount": "2017213510668",
+  "fee": "10000000",
+  "sender": "AQ3ViA5qCFsiLEcmnAHMGD4ShWMtDYEAao",
+  "senderPublicKey": "02f7f2b2847c9a8c989b97fd0bf75854d386adfe58a28b2c321739d51e8976ee34",
+  "recipient": "AZhajPPzbRiyiiddrbran5DhhybjR4oax7",
+  "signature": "30440220226e7cf2207412e516c4e1e3672a75fa2c00330525dbd4875670e6d65e1aa2f702203f72f7be0a1f602374ddb70aca2454f6191a8ab170cef74b60d9b06b955b13a9",
+  "confirmations": 1621,
+  "timestamp": {
+   "epoch": 305177896,
+   "unix": 1795279096,
+   "human": "2026-11-21T16:38:16.000Z"
+  },
+  "nonce": "1"
+ },
+ {
+  "id": "400f390ea8b596b2f2a3b7b4a5a6a0d33e34dc48275eb91e65fb36e0161ac6a8",
+  "blockId": "addaeb0939e10afad27c685f9b38aea3206e560f03ddb121649d1df42e28bf87",
+  "version": 2,
+  "type": 1,
+  "typeGroup": 1,
+  "amount": "0",
+  "fee": "10000000",
+  "sender": "AS2Buqj3DuBCig7VXMfV1oGadBEMbgbnYM",
+  "senderPublicKey": "02827c3fbca67bfb7f582754a2b763bb0935bdc304bc46d6619c67bd4518be119d",
+  "recipient": "AS2Buqj3DuBCig7VXMfV1oGadBEMbgbnYM",
+  "signature": "84ecd71bfc6264e6368541d01cc500a30aded268b92d71b0b681e822e4bf9e6cf3136ebf56c4c33b53ef5ace5e52f526bc0131f6c171707c3b9ed59875657126",
+  "asset": {
+   "signature": {
+    "publicKey": "0235385ac242ff2f7c5ee43252a43d1a39fc10857dc8a001eb1c9d88f4d68a14b7"
+   }
+  },
+  "confirmations": 530853,
+  "timestamp": {
+   "epoch": 300932320,
+   "unix": 1791033520,
+   "human": "2026-10-03T13:18:40.000Z"
+  },
+  "nonce": "1"
+ },
+ {
+  "id": "e30fe3a361ade5e1c2c813f0758fffae37615bbb2ff8c3dbe84912ef5724a2a8",
+  "blockId": "27596415654b27b80f90640f2f7074600f456395d08395672e669d98ecd07c57",
+  "version": 2,
+  "type": 2,
+  "typeGroup": 1,
+  "amount": "0",
+  "fee": "2500000000",
+  "sender": "AarrbebwWJ3rZ3a3gEXgasnVuBxd7uz6Qu",
+  "senderPublicKey": "024614429b516d552fd0dbe721c368f21ac3ed66c8392174083eefd5c0167babc9",
+  "recipient": "AarrbebwWJ3rZ3a3gEXgasnVuBxd7uz6Qu",
+  "signature": "140f6416ca1910122b20c645968d33149b19fbfc664954e7c75d3711b9352f97b0240275a7a0457863a1a7533b46baf8beaf579ac56edccd6b8cd6a908b516f3",
+  "asset": {
+   "delegate": {
+    "username": "digifade"
+   }
+  },
+  "confirmations": 493120,
+  "timestamp": {
+   "epoch": 301239904,
+   "unix": 1791341104,
+   "human": "2026-10-07T02:45:04.000Z"
+  },
+  "nonce": "1"
+ },
+ {
+  "id": "bff9891b70e8a0c5a913a4b57a53bc4dc7db96af4635c8065ba884dcbb7941d9",
+  "blockId": "0f9cc13e2ee9cc3911b3994c0abfbc36f2e702fd27276f888af80dc69d75abbf",
+  "version": 2,
+  "type": 2,
+  "typeGroup": 1,
+  "amount": "0",
+  "fee": "2420171704",
+  "sender": "AUt9uVWxiNMRH1PvXDrgSb3yGKSveG1FpY",
+  "senderPublicKey": "02267587c4c27bc95f7e3c1e6754bcbfebc5e7cb70d675b2125947427481b2d4f0",
+  "recipient": "AUt9uVWxiNMRH1PvXDrgSb3yGKSveG1FpY",
+  "signature": "7a549144279c206b4bd1524b4dae8919706e55a344daeb7b45a83d11d0a28009a402ddbb65777538f7662ff6398f0027cf7863e42456bb31b9d002d7323956ed",
+  "signSignature": "63f613eac01c29167f593019a30e429fd8dcf49f7197aa1d7110a163aad657fe474e81e3a46b3b53df92f3091d904d79035bd23353f7a72a3ab88940aa149a53",
+  "asset": {
+   "delegate": {
+    "username": "irina18"
+   }
+  },
+  "confirmations": 529985,
+  "timestamp": {
+   "epoch": 300939552,
+   "unix": 1791040752,
+   "human": "2026-10-03T15:19:12.000Z"
+  },
+  "nonce": "4",
+  "_secondPublicKey": "02396ee9f1d0a3131940566bf54c028ed76e1cde9d19dbc273ba15e9004ca0a5b0"
+ },
+ {
+  "id": "32de8db303cc58c8def5c317446096a3bc0e9a531388e852d576119e8536d954",
+  "blockId": "44a4c2e7bd7d7bf7a94488f595d3e3296220fd548f02eb6c86eb57e32ed6da78",
+  "version": 2,
+  "type": 3,
+  "typeGroup": 1,
+  "amount": "0",
+  "fee": "4661155",
+  "sender": "AewY1u983nedMWbk5SuunzKgCtZpqMEDZk",
+  "senderPublicKey": "02fc269b252b872c0d5b2eadd6e88ddf4eb60c1fb7dacc6da021e6d8965b70e3c1",
+  "recipient": "AewY1u983nedMWbk5SuunzKgCtZpqMEDZk",
+  "signature": "ab8f17b5a688ca700307b6d0f81ae4a2b48fe8632fad4d3a7a5a72bbb3ac38fb96b1cb36cd1b621f19d43c307bd4881bdfd71565f8597d971b00c67acd40178c",
+  "asset": {
+   "votes": [
+    "-021f277f1e7a48c88f9c02988f06ca63d6f1781471f78dba49d58bab85eb3964c6",
+    "+020431436cf94f3c6a6ba566fe9e42678db8486590c732ca6c3803a10a86f50b92"
+   ]
+  },
+  "confirmations": 141007,
+  "timestamp": {
+   "epoch": 304062736,
+   "unix": 1794163936,
+   "human": "2026-11-08T18:52:16.000Z"
+  },
+  "nonce": "6"
+ },
+ {
+  "id": "42a2d92bc70ddbc25c457cd8ae203f793f9df61cb34b83b21b5e579986c58ca0",
+  "blockId": "d74a390af6661f41ab596283cdef55eb5b2a3df8bdef449f3b3fcf9d2bc27d16",
+  "version": 2,
+  "type": 6,
+  "typeGroup": 1,
+  "amount": "0",
+  "fee": "2073000",
+  "sender": "ALxjBUcpD9Ka5FbX2GAjpauy7eGC2dWB4V",
+  "senderPublicKey": "02b7e41520681590930c4f013cf8df0a14315c656f779a1e2e847df3531944877e",
+  "recipient": "ALxjBUcpD9Ka5FbX2GAjpauy7eGC2dWB4V",
+  "signature": "a4c03b7cd8fdb59a200466b3865350facf6006cb4f1274087461255a395badc46f99c62b5f82bb101c531c1a10a8cfcbf42c220e6bcb304f368840972d7e07a0",
+  "vendorField": "From locationzero",
+  "asset": {
+   "payments": [
+    {
+     "amount": "3023898000",
+     "recipientId": "ALtXhRBPHPZyBG6NPAPrBhkdzW9YbakjRA"
+    },
+    {
+     "amount": "1155461937",
+     "recipientId": "ANund6jnekJ1HPoXTia7Xqh5WgfZBAQfub"
+    },
+    {
+     "amount": "13695969",
+     "recipientId": "ARAnbxhPB5JF77ww4SQ7sW5e2DyjADZpYq"
+    },
+    {
+     "amount": "4138848",
+     "recipientId": "ALtXhRBPHPZyBG6NPAPrBhkdzW9YbakjRA"
+    },
+    {
+     "amount": "2637516",
+     "recipientId": "APVZV7ksVEY3TEC6tQZYf9eqwAhQQnQrBW"
+    },
+    {
+     "amount": "65667",
+     "recipientId": "Ab3ri95mMpQ1bTEcn7E5SJ5X3taU8gZq7P"
+    }
+   ]
+  },
+  "confirmations": 69,
+  "timestamp": {
+   "epoch": 305190320,
+   "unix": 1795291520,
+   "human": "2026-11-21T20:05:20.000Z"
+  },
+  "nonce": "8461"
+ },
+ {
+  "id": "8153877712ca219ef242a014d6f2150cad3e5e5cef677c66df396ec3f8cdd054",
+  "blockId": "1085ef06092579960540f7795f3fde5f0fca5b44d90c1cd7a4e95c90acb9ca98",
+  "version": 2,
+  "type": 6,
+  "typeGroup": 1,
+  "amount": "0",
+  "fee": "1971000",
+  "sender": "AbMD51ELvAgZ8HfbmgTkx4SVxeWUjsjbuG",
+  "senderPublicKey": "0292d25525f431d9c03e88c4241980392b63703861454301d265b6e825cc303803",
+  "recipient": "AbMD51ELvAgZ8HfbmgTkx4SVxeWUjsjbuG",
+  "signature": "911a71ec987256ce8c4565a774eb9a1a9f2ce2f3a1e88d6826d8c7c48f4b2bce3e5ef2f5a9fa72ec62f9b763a45564adf287dbb0a87d10691c00dfbc97e4b515",
+  "vendorField": "Rewards",
+  "asset": {
+   "payments": [
+    {
+     "amount": "9938029000",
+     "recipientId": "AQpAowjt5qcYb6438hdxL1keDdWWw9Dht4"
+    },
+    {
+     "amount": "4041632946",
+     "recipientId": "AHxtsADwZpPAu6dqnxU1YmgNR1tKzH4Ys3"
+    },
+    {
+     "amount": "12049866",
+     "recipientId": "AQpAowjt5qcYb6438hdxL1keDdWWw9Dht4"
+    },
+    {
+     "amount": "6317118",
+     "recipientId": "ARDv3jqHj7fq4Y9tBtF5ESJJu9aX28YdjG"
+    }
+   ]
+  },
+  "confirmations": 105,
+  "timestamp": {
+   "epoch": 305190032,
+   "unix": 1795291232,
+   "human": "2026-11-21T20:00:32.000Z"
+  },
+  "nonce": "2110"
+ },
+ {
+  "id": "00c802026f671abf090454302aeee3b0c4d7e88566ace4222138af504efb398a",
+  "blockId": "c2bfcd42025d8eafa64baa544c4606c4cb04e85773d45f434be8e0109ceb6136",
+  "version": 2,
+  "type": 6,
+  "typeGroup": 1,
+  "amount": "0",
+  "fee": "5000000",
+  "sender": "AR7Hi2yU6GzMPJQgbLM8LKNPNmLPKnthGA",
+  "senderPublicKey": "02cb93172a19a66e236baedb382b3c9013ddd4238c89e6eb739d20b362010c00c1",
+  "recipient": "AR7Hi2yU6GzMPJQgbLM8LKNPNmLPKnthGA",
+  "signature": "90e7511fe9b6e8cc2481197955ee3b544fb2780509fb08587124a33f991a2769a52f5c464cbf923c1bc5c251bb290d2f27200607ebd7d8b1f4ebba4d26f95e5e",
+  "signSignature": "f601f5df2b9e627cf1bac528f4e9a98883bf17800c8458a94ee7def955d64b8f5a74dfe78b7b0db82158a8b84ac82d5d8fd9e8eea98bf4cb40c54c35d823d5f0",
+  "vendorField": "dated x TBW & Fair Fees.",
+  "asset": {
+   "payments": [
+    {
+     "amount": "16888085887",
+     "recipientId": "ANoNeeFDFo61XcQBYad6rEbPvfATwgjTNT"
+    },
+    {
+     "amount": "6620629438",
+     "recipientId": "AL2NU2c7iTMqEm1BFNoYDmPPBPuyXJ9hef"
+    },
+    {
+     "amount": "4127800519",
+     "recipientId": "AVuQPZ1DqKBJbs73V1ktExwwqhwHgwAq9W"
+    },
+    {
+     "amount": "3753236746",
+     "recipientId": "APsfcWSwrkSsTQQerFrVtx6LVE9VbHCdoc"
+    },
+    {
+     "amount": "3030763088",
+     "recipientId": "AZBtvWxSnRVMQqFAWPeRRt9yjTmkrwFMrM"
+    },
+    {
+     "amount": "1086976349",
+     "recipientId": "AQSr3Je1dSyP7o4RrAPD9sSPF3rifd81zE"
+    },
+    {
+     "amount": "1003566774",
+     "recipientId": "AXFwa6xMhZdfyy6RWJNPkigYMut42KE8Va"
+    },
+    {
+     "amount": "960420310",
+     "recipientId": "ANxH6XNhE4RHgA7rcyyaiyxVVmAp4V9Lbm"
+    },
+    {
+     "amount": "841911366",
+     "recipientId": "AU6WBJ5BYc2sL25HK81Tnfzj9THYzH1aX9"
+    },
+    {
+     "amount": "737235210",
+     "recipientId": "AYK2SfYRE1LnEEntCz3Mf3HXnwimH3tppa"
+    },
+    {
+     "amount": "638253170",
+     "recipientId": "AK8tB9a4ucmHsqFFQiB3ZjjWTovX8honUt"
+    },
+    {
+     "amount": "533961581",
+     "recipientId": "ATyrQ8hVqizWbs39gTv4DLhPxewjbK79wF"
+    },
+    {
+     "amount": "334190726",
+     "recipientId": "AcK1pcEqNiJTkJgS4CBKnUxbHeFnnBR5Gj"
+    },
+    {
+     "amount": "317704269",
+     "recipientId": "AdkbaMFmvaT5EdDmY1qWLZRavH2CvZzBgL"
+    },
+    {
+     "amount": "314525608",
+     "recipientId": "ARrSQpwFBpPLomhUk9x9DqbPauPoFowdWk"
+    },
+    {
+     "amount": "218981772",
+     "recipientId": "AMZAQJXQUTauUprM5LaRqqNL97WQvwqqep"
+    },
+    {
+     "amount": "185023125",
+     "recipientId": "AYokfssTtnjgFgZjJp3DoTaLA8EjLJCWv5"
+    },
+    {
+     "amount": "139667488",
+     "recipientId": "AFtjs7TDheanbJL6Pjx2DL52fvgrxhJ1Ck"
+    },
+    {
+     "amount": "121760932",
+     "recipientId": "AV4kCMJ3PcZdKc26FU4UQ5vARypyTogN2C"
+    },
+    {
+     "amount": "101400746",
+     "recipientId": "AcZpksr2mau1J5JG9Dq5zBevekvzsZHz6B"
+    },
+    {
+     "amount": "77260117",
+     "recipientId": "AZk6f211yawTZu6nRDJ2txkhcYoe12M5tb"
+    },
+    {
+     "amount": "69399643",
+     "recipientId": "AQxhmzwUG5AmK3vjscCs6uUjgFmwpJL1rh"
+    },
+    {
+     "amount": "33839321",
+     "recipientId": "AUtiP2j7YBnzyvHqXFne5TKMkAPSdpTs36"
+    },
+    {
+     "amount": "31188713",
+     "recipientId": "AVqcZwxp8qomZ3hGSZohiRZaJ5tAcXUEg5"
+    },
+    {
+     "amount": "9779806",
+     "recipientId": "AJ5TVsZujr7w9JTCvcHBGPGadddy787KP9"
+    },
+    {
+     "amount": "4632312",
+     "recipientId": "AMMEwHMR8metYq5ESpjGgMFArLR8BbVEpt"
+    },
+    {
+     "amount": "3153340",
+     "recipientId": "AUKxnXSggGBjhejX4i6Vi3NyXsneU6WDCV"
+    },
+    {
+     "amount": "2546157",
+     "recipientId": "AVGQXUazduZxbRoBYqmpWpAvy2KsS4s2uB"
+    },
+    {
+     "amount": "2387583",
+     "recipientId": "AUGsgCsfGgTUZRRws8znJrX98qvkHgp35G"
+    },
+    {
+     "amount": "1437297",
+     "recipientId": "AVwQGFDoaNK7h2KrSDFWm9ZUU5V629VQvH"
+    },
+    {
+     "amount": "661834",
+     "recipientId": "AGKNjKrKRvH65QTLVH21EHfVCB5E5wunub"
+    },
+    {
+     "amount": "653500",
+     "recipientId": "AGpopMUC55wNCoibXd6TA6bj2JMP8AvGiV"
+    },
+    {
+     "amount": "625540",
+     "recipientId": "AGAAjuM61rqnRMdKMhps9ZpwzzqsTUpK4C"
+    },
+    {
+     "amount": "563609",
+     "recipientId": "AbiJmvzQicQEfYvyV2nAvR5PQMVnJJvwjA"
+    },
+    {
+     "amount": "501572",
+     "recipientId": "ATzmX6HwxzY3QxgugaUhD1WWbaskLSyRXC"
+    },
+    {
+     "amount": "363782",
+     "recipientId": "AXbkYLP6ZXsh7b7PSNNGdqJFkm7g5QQLdz"
+    },
+    {
+     "amount": "362727",
+     "recipientId": "AMfRqomdHoBMh1TxyQdKMrmTNKS8MiyT4c"
+    },
+    {
+     "amount": "343947",
+     "recipientId": "AZ5zZZPQWEemYHPNmS3xnKzZ9ENLK79wFC"
+    },
+    {
+     "amount": "272626",
+     "recipientId": "AKqic6dk8k4mLahWHPePXxjydKeNvBfSVt"
+    },
+    {
+     "amount": "265451",
+     "recipientId": "AJNK7xLxFKxMq1wo5Pjg25VYSnTfkeP5PT"
+    },
+    {
+     "amount": "256378",
+     "recipientId": "AFyjTk1TmspjfHvVnt4BEfQD3qcUtT5fnJ"
+    },
+    {
+     "amount": "246988",
+     "recipientId": "AJbe3CHunBetzEnRKZyucDd7jD3jKKDzxf"
+    },
+    {
+     "amount": "238653",
+     "recipientId": "Ad4uYJtRuAP9LWLbk7p8c5rVMCaUNnfEp2"
+    }
+   ]
+  },
+  "confirmations": 107,
+  "timestamp": {
+   "epoch": 305190016,
+   "unix": 1795291216,
+   "human": "2026-11-21T20:00:16.000Z"
+  },
+  "nonce": "29446",
+  "_secondPublicKey": "03e34a05e1dc8a1975e763b53427ebc5d5261507903e143ed904ddfbf7ba9dd4df"
+ },
+ {
+  "id": "d70223827183b48a225daa2416e7ca3d5461e875a445093c9f900c396aa75068",
+  "blockId": "f49a93abf6bb3dca2170e2afd8d31283e9eabea5f151805d56ea49c205ee7450",
+  "version": 2,
+  "type": 6,
+  "typeGroup": 1,
+  "amount": "0",
+  "fee": "10000000",
+  "sender": "ATK14wxyYxbELq2b91bAfBY8Vmh9J6MDej",
+  "senderPublicKey": "02cebaa07d39ccc831445b4b3e5bce69a4db63d8f44de76d4f7d5e6c219b637396",
+  "recipient": "ATK14wxyYxbELq2b91bAfBY8Vmh9J6MDej",
+  "signature": "3044022047c910d85036ca59b992eed9e1eb496ba124c583301d30330c963045010552d1022017346470b09b2222667a07441af25e83e13340a3aa41a07ff0025485517f891c",
+  "signSignature": "3045022100d2b2ccf65ab8893dbb69925d2c83a70dbc863aed49b986ade0e8e22559527e38022048a3c28cb94ab17bd6be6a7a3e4866a94735b425153cbb92b0713faf79acfbca",
+  "vendorField": "itsanametoo: profit share",
+  "asset": {
+   "payments": [
+    {
+     "amount": "106133",
+     "recipientId": "AM1WPVPtaK7htf5kwhXGcW5pqL6epPCUec"
+    },
+    {
+     "amount": "129132",
+     "recipientId": "AHnoxs4tdqyP3RytJMg5gKY3YcmVgXEQgv"
+    },
+    {
+     "amount": "131800",
+     "recipientId": "ALvwg1z18vf6Pzqr1DyCQkVmF1CuTysX7h"
+    },
+    {
+     "amount": "10984401",
+     "recipientId": "Aar1z8KwkfG1dYs7vkcHAjo5HDZqtvfGY2"
+    },
+    {
+     "amount": "142913606",
+     "recipientId": "AXHxCsT6SXRGQaW6p2ez8h94HM7ZxzBXyz"
+    },
+    {
+     "amount": "5660088",
+     "recipientId": "ASkHerYJ7BnesqMWgsCk7kcsewxhvyrveD"
+    },
+    {
+     "amount": "72146443",
+     "recipientId": "AX1XRDLytGnquu5ikoeYZNaJTDdqFjr2Cq"
+    },
+    {
+     "amount": "4684492",
+     "recipientId": "AG8VMY1jSTHcQdjAUvnvhpZcRFj1feVmJ7"
+    },
+    {
+     "amount": "115396374",
+     "recipientId": "ATK14wxyYxbELq2b91bAfBY8Vmh9J6MDej"
+    },
+    {
+     "amount": "19344376",
+     "recipientId": "AasUWkSZuWARYCSdzyjTjR6WvXkr79KdKS"
+    },
+    {
+     "amount": "17633494",
+     "recipientId": "ASY49UMAg2Eb3dqA9QQ38M8tBiQHL1UAzn"
+    },
+    {
+     "amount": "15538558",
+     "recipientId": "AWvnWmYmbER6X2r1nE2KMenMK9pLTyawoG"
+    },
+    {
+     "amount": "14359651",
+     "recipientId": "AHGcyARBAGZooR3Y6L3bhXJvAUZysrnVpR"
+    },
+    {
+     "amount": "13312660",
+     "recipientId": "Af1hgQTWiKWbv7SR1gaxpmXY8zdzvgWEHj"
+    },
+    {
+     "amount": "9939936",
+     "recipientId": "AJvaubXj4UaWY2hHJQtPXMyzcLLeysJhoZ"
+    },
+    {
+     "amount": "6424841",
+     "recipientId": "AMJ9JU6pSkoztnEFpjeBXLrTRRhCvjA85k"
+    },
+    {
+     "amount": "2339862",
+     "recipientId": "AZR1SQfbD8o1KKxL7Dy8N4NthGSHJVqzDq"
+    },
+    {
+     "amount": "100884",
+     "recipientId": "AbJgoRYYpCsTaR2g1epMq7FSVUjFYFDiGT"
+    },
+    {
+     "amount": "106680",
+     "recipientId": "ATjY9gFtdkknYGfGusBoGcuF46tbFsMvpS"
+    },
+    {
+     "amount": "188212",
+     "recipientId": "Ad1GddFEPXXUUAH7Vka5S2HNVFXwEU9kri"
+    },
+    {
+     "amount": "360150",
+     "recipientId": "APYBiT55RHNGJMRENSCmY7fEkjhaT6A6Jg"
+    },
+    {
+     "amount": "1923081",
+     "recipientId": "ALza3pKEcrRQDAJJ94JJYyEWzK4ETJ62wh"
+    },
+    {
+     "amount": "125209960",
+     "recipientId": "AatBBQ7CDY8f6daKQbTFauraS15Usj4ZnR"
+    },
+    {
+     "amount": "60357533",
+     "recipientId": "ALVzwF5v52ZPXn555bSUUSscDgMpQHXszM"
+    },
+    {
+     "amount": "36713838",
+     "recipientId": "ALafawFFyEfj7cv1vyEN9ie3c11XjXrHUH"
+    },
+    {
+     "amount": "4284782",
+     "recipientId": "AYw7dkWFz9vttC2crsmks9Bgdv9PJSCa59"
+    },
+    {
+     "amount": "30469426",
+     "recipientId": "AZtQqBYr2MCDEgxVMEkifdHTdEAmLgs32G"
+    },
+    {
+     "amount": "3192520",
+     "recipientId": "AX4QV9UKSedrxnf7pYp5Ty7pPwwrz46J9u"
+    },
+    {
+     "amount": "926528",
+     "recipientId": "ASwuLAiTacopWcyJso2NSGvQy1Q6Vap4qr"
+    },
+    {
+     "amount": "8994509",
+     "recipientId": "AetgPYRiu9CF1Y6vTZhz2MvbxDfyS2DFxy"
+    },
+    {
+     "amount": "70495428",
+     "recipientId": "AS5VL7RpokSzgMWVvpJPv1jr8Fbm5nn9op"
+    },
+    {
+     "amount": "40758589",
+     "recipientId": "ARuogZQdKmDLNdYfzoFcqpEPABMPkkic9z"
+    },
+    {
+     "amount": "183121797",
+     "recipientId": "AU5569exS8oKqg1A6TvK9RrFtp85DoHw1M"
+    },
+    {
+     "amount": "145241783",
+     "recipientId": "ASg3ct5YF12kKf2ZxwJBzW24whhzhm1juy"
+    },
+    {
+     "amount": "475122152",
+     "recipientId": "APEMfwxrwmWatJ1Y9DgpqVBLjkWmBRNvB9"
+    },
+    {
+     "amount": "11058135",
+     "recipientId": "APWUfpjPvPD6YGoW6z57uuZgzVka6A26qB"
+    },
+    {
+     "amount": "39038784",
+     "recipientId": "Ac5a9LJnSi6onZFzmV5dpRaFkUwYaD8CwH"
+    },
+    {
+     "amount": "100567298",
+     "recipientId": "AR6eh7dMYwcPfAijr6ajyhueRcYrUDQ5hA"
+    },
+    {
+     "amount": "108489364",
+     "recipientId": "AWFFYCs3ry71feh1KZmnFE2KXmfMt9xby8"
+    },
+    {
+     "amount": "20078239",
+     "recipientId": "AcFakgwXUxe6K8Em7sxt7ptWg4JJrMKT81"
+    },
+    {
+     "amount": "117433221",
+     "recipientId": "AW9xUAJ92Mpm5QoNjbmByFJVVVbR7tjtfh"
+    },
+    {
+     "amount": "7222762",
+     "recipientId": "AVkaocLfbyGWxxR8gT9qCRaHMjv9qX3XcQ"
+    },
+    {
+     "amount": "15916151",
+     "recipientId": "ARQWvq9t7YD9geen8tf5hyYCep8j9gkcm2"
+    },
+    {
+     "amount": "437775",
+     "recipientId": "AKa3C5dSzWrUFK2hdgZjA4amoWKxXQNBQ8"
+    },
+    {
+     "amount": "10832845",
+     "recipientId": "AUGDZm9JnFwaeCuNFtzFwumAae2bmpNCjf"
+    },
+    {
+     "amount": "28097295",
+     "recipientId": "ANmWWJH6n9pTbG5e8sC5BrYfKUxfpeGdKz"
+    },
+    {
+     "amount": "377087",
+     "recipientId": "AMDQtsHT3DourzFGSeDFSMuBVWLvGPpJty"
+    },
+    {
+     "amount": "5803025",
+     "recipientId": "AeEiXzcCZEDFNkZ1ZeruECo58woQ4v4Rtt"
+    },
+    {
+     "amount": "33122143",
+     "recipientId": "AKq6hBsU3722d2SKyWcg5knQ2ETWH88itV"
+    },
+    {
+     "amount": "93262239",
+     "recipientId": "ALTn8YVjp4NPSxe3PzNL9b7ARacDiaArCQ"
+    },
+    {
+     "amount": "74458041",
+     "recipientId": "ASz8YFK7AiAcSnHLZen486rAABua7P279q"
+    },
+    {
+     "amount": "48512941",
+     "recipientId": "AaxbUjE9CbXkAARZJSB9tRMbihErvcDMs3"
+    },
+    {
+     "amount": "44488484",
+     "recipientId": "Adw9iqsfKpCoVNVzYTBpbMRDs8mC9zdEtW"
+    },
+    {
+     "amount": "131242",
+     "recipientId": "AWgZajUUwu63bFQiw4feuDoHyPGPJAMAvv"
+    },
+    {
+     "amount": "17029070",
+     "recipientId": "AFxW8ibTN89zqbX63Xp1kTbnKSM1YkhhzD"
+    },
+    {
+     "amount": "412664358",
+     "recipientId": "AaDZ5pD2sdV2uhEQjU5Qrf4LpDgYRYKSds"
+    },
+    {
+     "amount": "3380214157",
+     "recipientId": "AWerwH3LuRVeKZ9wd9mpMRafndtUVDzJxU"
+    },
+    {
+     "amount": "89728748",
+     "recipientId": "AWJJCHtLV9pYKGqb1zj8XuCYiE9Umt9HBQ"
+    },
+    {
+     "amount": "637609730",
+     "recipientId": "ARKxJHvpBRpEY7DQ2csuEzdDyz78DwcrJB"
+    },
+    {
+     "amount": "11928504",
+     "recipientId": "ANYyRokvmjizMQZqErQ8T4FJtEpzf2uehZ"
+    },
+    {
+     "amount": "32183463",
+     "recipientId": "ARX2eBecLSSAqVcqSL3r4CzD9nm969bSpV"
+    },
+    {
+     "amount": "132017391",
+     "recipientId": "APAKdtQeZmXEwDVaoXyX77dgFMsZVVYCs8"
+    },
+    {
+     "amount": "258254982",
+     "recipientId": "AQps5sotY56dKtsw7qPLYZLJpwzMvV2s6n"
+    },
+    {
+     "amount": "161837",
+     "recipientId": "AFyi3LAnq1rsmkqEvh7ncmW8RmVGWMDNr5"
+    }
+   ]
+  },
+  "confirmations": 1005,
+  "timestamp": {
+   "epoch": 305182832,
+   "unix": 1795284032,
+   "human": "2026-11-21T18:00:32.000Z"
+  },
+  "nonce": "34442",
+  "_secondPublicKey": "02888fe1157b9959fb9bfa483460ef7b1522dccec889f409c6709345c3bc412c49"
+ },
+ {
+  "id": "d914416c4eb3a9ca6306e379da81f231ea71b23d024b03c26f87fcfd2c34b685",
+  "blockId": "210e8af75462f6b14c0cb7fa00ef38f2b59ad5b95fa16fd7287a2e9b19eee848",
+  "version": 2,
+  "type": 7,
+  "typeGroup": 1,
+  "amount": "0",
+  "fee": "1223275031",
+  "sender": "AMs12i43yotHaaSqt271JwZnyT4ZW1qSJy",
+  "senderPublicKey": "02fc62e212ee4fda5d901ba20a3dde5d69f35baf3ef0a7851adbb946766dbd608d",
+  "recipient": "AMs12i43yotHaaSqt271JwZnyT4ZW1qSJy",
+  "signature": "cda684ca04d369908018002635113c793ac0b21c99c580d3c43c8b795ae56cc02f37509806fb41c2ed075f47fcb4bc31560389952a6940c9382c0e3100f58236",
+  "confirmations": 9259979,
+  "timestamp": {
+   "epoch": 230637992,
+   "unix": 1720739192,
+   "human": "2024-07-11T23:06:32.000Z"
+  },
+  "nonce": "45"
+ },
+ {
+  "id": "87c8c0c1a32d939a4a94002ad4c70545906a6ec549120da6e12cf9bbf491d3b0",
+  "blockId": "1ac89d081fbc7e49b84905524ab647461f168f536f548f6907b62f4717bbfa78",
+  "version": 2,
+  "type": 7,
+  "typeGroup": 1,
+  "amount": "0",
+  "fee": "2000000",
+  "sender": "AbBvNH7Mu5wKqqevkRKrABm7KKaoR4GWhL",
+  "senderPublicKey": "03d768065bfd4dc8004e8cb37d092993617bcc09dc6d10931d57bff451f72d2b00",
+  "recipient": "AbBvNH7Mu5wKqqevkRKrABm7KKaoR4GWhL",
+  "signature": "c01e6ecec296979098ff6b916f107ed057b788f90dd8b1ae92f2995a2a6770bdf0e4893ab01e2021238e2e32911e99f5c6e039999e7251b92b401e98639f831c",
+  "signSignature": "df1c9b4e3c5d72727ac8c79b85bda2e5e8dba8585d3f8df197935dcbc08df8737aee160cd04d668e75730057fc8d33c520b082bae008492ce416c7e1df82b57c",
+  "confirmations": 3771452,
+  "timestamp": {
+   "epoch": 274761200,
+   "unix": 1764862400,
+   "human": "2025-12-04T15:33:20.000Z"
+  },
+  "nonce": "3587",
+  "_secondPublicKey": "0262919a25fe70f9b2315356a2ef60395abcb210d10d8fa8e8de41cdb8e519c451"
+ },
+ {
+  "id": "32de8db303cc58c8def5c317446096a3bc0e9a531388e852d576119e8536d954",
+  "blockId": "44a4c2e7bd7d7bf7a94488f595d3e3296220fd548f02eb6c86eb57e32ed6da78",
+  "version": 2,
+  "type": 3,
+  "typeGroup": 1,
+  "amount": "0",
+  "fee": "4661155",
+  "sender": "AewY1u983nedMWbk5SuunzKgCtZpqMEDZk",
+  "senderPublicKey": "02fc269b252b872c0d5b2eadd6e88ddf4eb60c1fb7dacc6da021e6d8965b70e3c1",
+  "recipient": "AewY1u983nedMWbk5SuunzKgCtZpqMEDZk",
+  "signature": "ab8f17b5a688ca700307b6d0f81ae4a2b48fe8632fad4d3a7a5a72bbb3ac38fb96b1cb36cd1b621f19d43c307bd4881bdfd71565f8597d971b00c67acd40178c",
+  "asset": {
+   "votes": [
+    "-021f277f1e7a48c88f9c02988f06ca63d6f1781471f78dba49d58bab85eb3964c6",
+    "+020431436cf94f3c6a6ba566fe9e42678db8486590c732ca6c3803a10a86f50b92"
+   ]
+  },
+  "confirmations": 141041,
+  "timestamp": {
+   "epoch": 304062736,
+   "unix": 1794163936,
+   "human": "2026-11-08T18:52:16.000Z"
+  },
+  "nonce": "6"
+ }
+]

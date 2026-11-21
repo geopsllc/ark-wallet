@@ -1,0 +1,201 @@
+//! ARK Core v3 key handling, addresses and signatures.
+//!
+//! - Private key = sha256(passphrase)  (ARK "passphrase" wallets, incl. BIP39 mnemonics used as passphrase)
+//! - Address     = base58check(pubKeyHash || ripemd160(compressed public key))
+//! - Signatures  = ARK "Schnorr" (bcrypto legacy / pre-BIP340 variant, 64 bytes) or DER ECDSA.
+
+use k256::elliptic_curve::ops::Reduce;
+use k256::elliptic_curve::sec1::ToEncodedPoint;
+use k256::elliptic_curve::PrimeField;
+use k256::{AffinePoint, FieldBytes, FieldElement, ProjectivePoint, Scalar, U256};
+use ripemd::Ripemd160;
+use sha2::{Digest, Sha256};
+use zeroize::Zeroizing;
+
+pub fn sha256(data: &[u8]) -> [u8; 32] {
+    Sha256::digest(data).into()
+}
+
+pub struct KeyPair {
+    secret: Zeroizing<[u8; 32]>,
+    pub public: [u8; 33],
+}
+
+impl KeyPair {
+    pub fn from_passphrase(passphrase: &str) -> Result<Self, String> {
+        let secret = Zeroizing::new(sha256(passphrase.as_bytes()));
+        let sk = k256::SecretKey::from_slice(secret.as_ref()).map_err(|_| "invalid passphrase key")?;
+        let public: [u8; 33] = sk
+            .public_key()
+            .to_encoded_point(true)
+            .as_bytes()
+            .try_into()
+            .map_err(|_| "bad public key")?;
+        Ok(Self { secret, public })
+    }
+
+    pub fn public_hex(&self) -> String {
+        hex::encode(self.public)
+    }
+
+    fn scalar(&self) -> Scalar {
+        let fb: FieldBytes = (*self.secret).into();
+        Option::from(Scalar::from_repr(fb)).expect("valid secret scalar")
+    }
+
+    /// ARK Schnorr (legacy bcrypto variant). `msg` is a 32-byte hash.
+    pub fn sign_schnorr(&self, msg: &[u8; 32]) -> [u8; 64] {
+        let d = self.scalar();
+        let mut nonce_input = Zeroizing::new([0u8; 64]);
+        nonce_input[..32].copy_from_slice(self.secret.as_ref());
+        nonce_input[32..].copy_from_slice(msg);
+        let mut k = <Scalar as Reduce<U256>>::reduce_bytes(&sha256(nonce_input.as_ref()).into());
+        let r_point = (ProjectivePoint::GENERATOR * k).to_affine();
+        let (rx, ry) = xy(&r_point).expect("non-identity nonce point");
+        if !is_square(&ry) {
+            k = -k;
+        }
+        let e = challenge(&rx, &self.public, msg);
+        let s = k + e * d;
+        let mut sig = [0u8; 64];
+        sig[..32].copy_from_slice(&rx);
+        sig[32..].copy_from_slice(&s.to_bytes());
+        sig
+    }
+
+    /// Deterministic (RFC6979) low-S ECDSA, DER encoded.
+    pub fn sign_ecdsa(&self, msg: &[u8; 32]) -> Vec<u8> {
+        use k256::ecdsa::{signature::hazmat::PrehashSigner, Signature, SigningKey};
+        let sk = SigningKey::from_slice(self.secret.as_ref()).expect("valid key");
+        let sig: Signature = sk.sign_prehash(msg).expect("sign");
+        let sig = sig.normalize_s().unwrap_or(sig);
+        sig.to_der().as_bytes().to_vec()
+    }
+}
+
+fn xy(p: &AffinePoint) -> Option<([u8; 32], [u8; 32])> {
+    let ep = p.to_encoded_point(false);
+    let x: [u8; 32] = (*ep.x()?).into();
+    let y: [u8; 32] = (*ep.y()?).into();
+    Some((x, y))
+}
+
+fn is_square(y: &[u8; 32]) -> bool {
+    let fe: Option<FieldElement> = FieldElement::from_bytes(&(*y).into()).into();
+    match fe {
+        Some(fe) => bool::from(fe.sqrt().is_some()),
+        None => false,
+    }
+}
+
+fn challenge(rx: &[u8; 32], pubkey: &[u8; 33], msg: &[u8; 32]) -> Scalar {
+    let mut h = Sha256::new();
+    h.update(rx);
+    h.update(pubkey);
+    h.update(msg);
+    <Scalar as Reduce<U256>>::reduce_bytes(&h.finalize())
+}
+
+fn parse_pubkey(pubkey: &[u8]) -> Option<(ProjectivePoint, [u8; 33])> {
+    let pk = k256::PublicKey::from_sec1_bytes(pubkey).ok()?;
+    let compressed: [u8; 33] = pk.to_encoded_point(true).as_bytes().try_into().ok()?;
+    Some((pk.to_projective(), compressed))
+}
+
+pub fn verify_schnorr(msg: &[u8; 32], sig: &[u8], pubkey: &[u8]) -> bool {
+    if sig.len() != 64 {
+        return false;
+    }
+    let Some((p, compressed)) = parse_pubkey(pubkey) else { return false };
+    let rx: [u8; 32] = sig[..32].try_into().unwrap();
+    let s_bytes: [u8; 32] = sig[32..].try_into().unwrap();
+    // r must be a valid field element, s a valid scalar
+    if bool::from(FieldElement::from_bytes(&rx.into()).is_none()) {
+        return false;
+    }
+    let Some(s) = Option::<Scalar>::from(Scalar::from_repr(s_bytes.into())) else { return false };
+    let e = challenge(&rx, &compressed, msg);
+    let r = (ProjectivePoint::GENERATOR * s - p * e).to_affine();
+    match xy(&r) {
+        Some((x, y)) => x == rx && is_square(&y),
+        None => false,
+    }
+}
+
+pub fn verify_ecdsa(msg: &[u8; 32], der: &[u8], pubkey: &[u8]) -> bool {
+    use k256::ecdsa::{signature::hazmat::PrehashVerifier, Signature, VerifyingKey};
+    let Ok(vk) = VerifyingKey::from_sec1_bytes(pubkey) else { return false };
+    let Ok(sig) = Signature::from_der(der) else { return false };
+    // Core accepts high-S? Be lenient on verify: normalize first.
+    let sig = sig.normalize_s().unwrap_or(sig);
+    vk.verify_prehash(msg, &sig).is_ok()
+}
+
+/// Verify either a 64-byte Schnorr or a DER ECDSA signature (ARK picks by length).
+pub fn verify_any(msg: &[u8; 32], sig: &[u8], pubkey: &[u8]) -> bool {
+    if sig.len() == 64 {
+        verify_schnorr(msg, sig, pubkey)
+    } else {
+        verify_ecdsa(msg, sig, pubkey)
+    }
+}
+
+pub fn address_from_public_key(pubkey: &[u8], pub_key_hash: u8) -> String {
+    let mut payload = Vec::with_capacity(21);
+    payload.push(pub_key_hash);
+    payload.extend_from_slice(&Ripemd160::digest(pubkey));
+    bs58::encode(payload).with_check().into_string()
+}
+
+/// Decode an address into its 21 raw bytes (version + hash160), checking the network byte.
+pub fn decode_address(address: &str, pub_key_hash: u8) -> Result<[u8; 21], String> {
+    let raw = bs58::decode(address.trim())
+        .with_check(None)
+        .into_vec()
+        .map_err(|_| format!("Invalid address: {address}"))?;
+    let raw: [u8; 21] = raw.try_into().map_err(|_| format!("Invalid address length: {address}"))?;
+    if raw[0] != pub_key_hash {
+        return Err(format!("Address {address} belongs to a different network"));
+    }
+    Ok(raw)
+}
+
+pub fn generate_mnemonic(words: usize) -> Result<String, String> {
+    let m = bip39::Mnemonic::generate(words).map_err(|e| e.to_string())?;
+    Ok(m.to_string())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn address_from_known_pubkey() {
+        let pk = hex::decode("020431436cf94f3c6a6ba566fe9e42678db8486590c732ca6c3803a10a86f50b92").unwrap();
+        assert_eq!(address_from_public_key(&pk, 23), "AKdr5d9AMEnsKYxpDcoHdyyjSCKVx3r9Nj");
+        assert!(decode_address("AKdr5d9AMEnsKYxpDcoHdyyjSCKVx3r9Nj", 23).is_ok());
+        assert!(decode_address("AKdr5d9AMEnsKYxpDcoHdyyjSCKVx3r9Nj", 30).is_err());
+    }
+
+    #[test]
+    fn passphrase_this_is_a_top_secret_passphrase() {
+        // Canonical ARK test fixture
+        let kp = KeyPair::from_passphrase("this is a top secret passphrase").unwrap();
+        assert_eq!(kp.public_hex(), "034151a3ec46b5670a682b0a63394f863587d1bc97483b1b6c70eb58e7f0aed192");
+        assert_eq!(address_from_public_key(&kp.public, 30), "D61mfSggzbvQgTUe6JhYKH2doHaqJ3Dyib");
+    }
+
+    #[test]
+    fn schnorr_and_ecdsa_roundtrip() {
+        let kp = KeyPair::from_passphrase("roundtrip").unwrap();
+        let msg = sha256(b"hello");
+        let s = kp.sign_schnorr(&msg);
+        assert!(verify_schnorr(&msg, &s, &kp.public));
+        let mut bad = s;
+        bad[40] ^= 1;
+        assert!(!verify_schnorr(&msg, &bad, &kp.public));
+        let e = kp.sign_ecdsa(&msg);
+        assert!(verify_ecdsa(&msg, &e, &kp.public));
+        assert!(verify_any(&msg, &e, &kp.public));
+    }
+}
