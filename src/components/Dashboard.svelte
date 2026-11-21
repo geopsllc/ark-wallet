@@ -25,12 +25,11 @@
 </script>
 
 <div class="dash stack">
-  <div class="row">
+  <div class="row hd">
     <h1>Dashboard</h1>
     <span class="spacer"></span>
-    <button class="btn ghost" onclick={() => { app.refreshAll(); app.refreshPrice(); }}><Icon name="refresh" size={14} /> Refresh</button>
+    <button class="btn ghost small" onclick={() => { app.refreshAll(); app.refreshPrice(); }}><Icon name="refresh" size={13} /> Refresh</button>
   </div>
-
   <div class="top">
     <div class="card portfolio">
       <div class="muted small one" title="Mainnet wallets, excluding delegate wallets">Total balance</div>
@@ -117,6 +116,21 @@
 <style>
   .dash {
     gap: 16px;
+
+  }
+  /* title row mirrors the sidebar brand row (logo band 18-46px, 28px tall);
+     24 - 6 + 28 + 16 gap = 62px, so the top cards line up with the Portfolio card */
+  .hd {
+    height: 28px;
+    margin-top: -6px;
+  }
+  .hd h1 {
+    font-size: 20px;
+    line-height: 28px;
+    margin: 0;
+    /* sit on the same text baseline as the sidebar's "ARK Wallet" (15px vs 20px type) */
+    position: relative;
+    top: -2px;
   }
   .top {
     display: grid;

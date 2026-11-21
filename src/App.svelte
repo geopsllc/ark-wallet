@@ -45,9 +45,9 @@
   }
   main {
     flex: 1;
-    overflow-y: auto;
-    /* reserve the scrollbar lane so content width never jumps when it appears */
-    scrollbar-gutter: stable;
+    /* always keep the scrollbar lane (the macOS webview ignores scrollbar-gutter),
+       so content width never jumps when a page grows tall enough to scroll */
+    overflow-y: scroll;
     min-width: 0;
   }
   .content {
