@@ -1,7 +1,6 @@
 <script lang="ts">
   import Icon from "./Icon.svelte";
   import WalletName from "./WalletName.svelte";
-  import Address from "./Address.svelte";
   import { walletColor } from "../lib/colors";
   import { app } from "../lib/state.svelte";
   import { formatArk, formatFiat } from "../lib/format";
@@ -71,6 +70,7 @@
   <div class="wallets">
     {#each app.wallets as w (w.id)}
       {@const d = app.data[w.address]}
+      {@const fv = d ? app.fiatValue(w.network, d.balance) : null}
       <button
         class="wallet"
         style="--wc:{walletColor(w)}"
@@ -86,12 +86,14 @@
         </div>
         <div class="row" style="gap:6px">
           <div class="wbal num">
-            {d ? formatArk(d.balance, 2, 2) : "…"} <span class="tok">{NETWORKS[w.network].token}</span>
+            {d ? formatArk(d.balance, 2, 2) : "…"} <span class="tok" title={NETWORKS[w.network].token}>{NETWORKS[w.network].symbol}</span>
           </div>
           <span class="spacer"></span>
           <span class="chev"><Icon name="chevron" size={14} /></span>
         </div>
-        <div class="waddr"><Address address={w.address} tail={6} /></div>
+        <div class="wfiat num" title={w.address}>
+          {#if fv !== null}<span class="usd">{formatFiat(fv, app.settings.currency)}</span>{:else if !NETWORKS[w.network].hasFiatValue}<span class="faint">no market value</span>{:else}&nbsp;{/if}
+        </div>
       </button>
     {:else}
       <div class="empty faint small">No wallets yet</div>
@@ -220,9 +222,9 @@
     color: var(--accent);
     transform: translateX(2px);
   }
-  .waddr {
-    font-size: 11px;
-    color: var(--faint);
+  .wfiat {
+    font-size: 12.5px;
+    font-weight: 500;
   }
   .wname {
     display: flex;
