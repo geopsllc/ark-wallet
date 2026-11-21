@@ -115,6 +115,20 @@ a:hover {
 .accent {
   color: var(--accent);
 }
+/* inline link that opens the explorer: looks like text, underlines on hover */
+.xlink {
+  all: unset;
+  cursor: pointer;
+  border-radius: 3px;
+}
+.xlink:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.xlink:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
 .small {
   font-size: 12.5px;
 }

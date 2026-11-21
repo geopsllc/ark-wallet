@@ -86,16 +86,18 @@
     <table class="list">
       <thead>
         <tr>
-          <th style="width:36%">Transaction</th>
+          <th style="width:34%">Transaction</th>
+          <th style="width:140px">Tx ID</th>
           <th>Memo</th>
           <th class="right">Amount</th>
-          <th class="right" style="width:150px">Date</th>
+          <th class="right" style="width:120px">Date</th>
         </tr>
       </thead>
       <tbody>
         {#each txs as t (t.id)}
           {@const r = describe(t)}
-          <tr class="clickable" onclick={() => openExternal(app.explorerTx(wallet.network, t.id))} title="Open in explorer">
+          {@const payments = (t.asset?.payments ?? []) as { recipientId: string }[]}
+          <tr>
             <td>
               <div class="row" style="gap:11px">
                 <div class="ticon {r.dir}"><Icon name={r.icon} size={15} /></div>
@@ -106,17 +108,24 @@
                   </div>
                   <div class="faint small ellipsis">
                     {#if r.votes}
-                      {#each r.votes as v, i}
-                        {i > 0 ? " → " : ""}{v[0] === "+" ? "for " : "from "}<DelegateName network={wallet.network} publicKey={v.slice(1)} />
-                      {/each}
+                      {#each r.votes as v, i}{i > 0 ? " → " : ""}{v[0] === "+" ? "for " : "from "}<DelegateName network={wallet.network} publicKey={v.slice(1)} link />{/each}
                     {:else if r.counterparty}
                       {r.dir === "in" ? "from" : "to"} <PartyName network={wallet.network} address={r.counterparty} />
+                    {:else if payments.length}
+                      to <PartyName network={wallet.network} address={payments[0].recipientId} />{#if payments.length > 1}<span>&nbsp;+{payments.length - 1} more</span>{/if}
                     {:else}
-                      <span class="mono">{shortAddress(t.id, 8)}</span>
+                      by <PartyName network={wallet.network} address={t.sender} />
                     {/if}
                   </div>
                 </div>
               </div>
+            </td>
+            <td>
+              <button
+                class="xlink mono txid"
+                title="{t.id} · open in explorer"
+                onclick={() => openExternal(app.explorerTx(wallet.network, t.id))}
+              >{shortAddress(t.id, 6)}<Icon name="external" size={11} /></button>
             </td>
             <td class="memo muted ellipsis" title={t.vendorField ?? ""}>{t.vendorField ?? ""}</td>
             <td class="right num">
@@ -143,7 +152,7 @@
           </tr>
         {:else}
           {#if !loading}
-            <tr><td colspan="4" class="muted" style="text-align:center;padding:40px">No transactions yet</td></tr>
+            <tr><td colspan="5" class="muted" style="text-align:center;padding:40px">No transactions yet</td></tr>
           {/if}
         {/each}
       </tbody>
@@ -152,8 +161,13 @@
 </div>
 
 <style>
-  .clickable {
-    cursor: pointer;
+  .txid {
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--accent);
   }
   .memo {
     max-width: 220px;

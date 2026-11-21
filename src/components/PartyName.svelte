@@ -3,6 +3,7 @@
   import { ark } from "../lib/ark";
   import { walletColor } from "../lib/colors";
   import { shortAddress } from "../lib/format";
+  import { openExternal } from "../lib/backend";
   import type { NetworkId } from "../lib/types";
 
   /** Shows the best known name for an address: one of your wallets, else its delegate username, else a short address. */
@@ -21,13 +22,22 @@
   });
 </script>
 
-{#if own}
-  <span class="own" style="color:{walletColor(own)}" title={address}>{own.name}</span>
-{:else if delegate}
-  <span class="accent" title={address}>{delegate}</span>
-{:else}
-  <span class="mono" title={address}>{shortAddress(address, chars)}</span>
-{/if}
+<button
+  class="xlink"
+  title="{address} · open in explorer"
+  onclick={(e) => {
+    e.stopPropagation();
+    openExternal(app.explorerAddress(network, address));
+  }}
+>
+  {#if own}
+    <span class="own" style="color:{walletColor(own)}">{own.name}</span>
+  {:else if delegate}
+    <span class="accent">{delegate}</span>
+  {:else}
+    <span class="mono">{shortAddress(address, chars)}</span>
+  {/if}
+</button>
 
 <style>
   .own {

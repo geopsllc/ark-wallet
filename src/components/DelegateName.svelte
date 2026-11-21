@@ -1,19 +1,36 @@
 <script lang="ts">
   import { app } from "../lib/state.svelte";
   import { ark } from "../lib/ark";
+  import { openExternal } from "../lib/backend";
   import { shortAddress } from "../lib/format";
   import type { NetworkId } from "../lib/types";
 
-  let { network, publicKey }: { network: NetworkId; publicKey: string } = $props();
+  let { network, publicKey, link = false }: { network: NetworkId; publicKey: string; link?: boolean } = $props();
   let name = $state("");
+  let address = $state("");
 
   $effect(() => {
     name = "";
+    address = "";
     ark
       .delegate(app.apiUrl(network), publicKey)
-      .then((d) => (name = d.username))
+      .then((d) => {
+        name = d.username;
+        address = d.address;
+      })
       .catch(() => {});
   });
 </script>
 
-<span class:accent={!!name}>{name || shortAddress(publicKey, 6)}</span>
+{#if link && address}
+  <button
+    class="xlink accent"
+    title="{address} · open in explorer"
+    onclick={(e) => {
+      e.stopPropagation();
+      openExternal(app.explorerAddress(network, address));
+    }}>{name}</button
+  >
+{:else}
+  <span class:accent={!!name}>{name || shortAddress(publicKey, 6)}</span>
+{/if}
