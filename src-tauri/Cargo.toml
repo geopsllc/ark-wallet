@@ -35,3 +35,10 @@ codegen-units = 1
 lto = true
 opt-level = "s"
 strip = true
+
+# macOS: catch the trackpad "swipe between pages" gesture (three-finger swipe), which the
+# webview never sees, and forward it to the UI as a Back action.
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2 = "0.6"
+objc2-app-kit = { version = "0.3", default-features = false, features = ["std", "NSEvent", "NSResponder", "block2"] }
+block2 = "0.6"

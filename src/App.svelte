@@ -8,6 +8,7 @@
   import TxOverlay from "./components/TxOverlay.svelte";
   import { app } from "./lib/state.svelte";
   import { installBackNavigation } from "./lib/backnav";
+  import { listen } from "@tauri-apps/api/event";
 
   let adding = $state(false);
 
@@ -16,7 +17,26 @@
   });
 
   // mouse back button / trackpad swipe / Cmd+[ return to the previous panel
-  $effect(() => installBackNavigation(() => app.back()));
+  $effect(() =>
+    installBackNavigation(
+      () => app.back(),
+      () => app.forward(),
+    ),
+  );
+
+  // macOS trackpad "swipe between pages" (three fingers) is caught natively and sent as "nav-back" / "nav-forward"
+  $effect(() => {
+    if (!("__TAURI_INTERNALS__" in window)) return;
+    const unlisten: (() => void)[] = [];
+    let gone = false;
+    const keep = (u: () => void) => (gone ? u() : unlisten.push(u));
+    listen("nav-back", () => app.back()).then(keep);
+    listen("nav-forward", () => app.forward()).then(keep);
+    return () => {
+      gone = true;
+      unlisten.forEach((u) => u());
+    };
+  });
 
   const current = $derived(app.view.name === "wallet" ? app.wallet(app.view.id) : undefined);
 </script>

@@ -1,13 +1,14 @@
 /**
- * "Back" input: the mouse back button (button 3), a two-finger swipe right on a trackpad,
- * and the usual keyboard shortcuts (Cmd+[ on macOS, Alt+Left elsewhere).
+ * Back / Forward input: mouse buttons 4/5 (button 3/4), two-finger horizontal trackpad swipes,
+ * and the usual shortcuts (Cmd+[ / Cmd+], Alt+Left / Alt+Right).
+ * (The macOS three-finger swipe is caught natively in Rust; see install_swipe_back.)
  * Returns a cleanup function.
  */
-export function installBackNavigation(back: () => void): () => void {
+export function installBackNavigation(back: () => void, forward: () => void): () => void {
   const onMouse = (e: MouseEvent) => {
-    if (e.button === 3) {
+    if (e.button === 3 || e.button === 4) {
       e.preventDefault();
-      if (e.type === "mouseup") back();
+      if (e.type === "mouseup") (e.button === 3 ? back : forward)();
     }
   };
 
@@ -31,7 +32,8 @@ export function installBackNavigation(back: () => void): () => void {
       fired = true;
       back();
     } else if (sum > THRESHOLD) {
-      fired = true; // swipe the other way: no forward history, just swallow the gesture
+      fired = true;
+      forward();
     }
   };
 
@@ -41,6 +43,9 @@ export function installBackNavigation(back: () => void): () => void {
     if ((e.metaKey && e.key === "[") || (e.altKey && e.key === "ArrowLeft")) {
       e.preventDefault();
       back();
+    } else if ((e.metaKey && e.key === "]") || (e.altKey && e.key === "ArrowRight")) {
+      e.preventDefault();
+      forward();
     }
   };
 

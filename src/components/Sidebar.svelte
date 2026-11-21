@@ -53,7 +53,7 @@
   <div class="total">
     <div class="faint small">Portfolio</div>
     <div class="tv num">{app.portfolioFiat !== null ? formatFiat(app.portfolioFiat, app.settings.currency) : "—"}</div>
-    <div class="muted small num">{formatArk(app.portfolioArk, 2, 2)}<Sym /></div>
+    <div class="pa num">{formatArk(app.portfolioArk, 2, 2)}<Sym /></div>
   </div>
 
   <nav>
@@ -131,6 +131,12 @@
     border-radius: 12px;
     background: linear-gradient(160deg, rgba(115, 191, 255, 0.13), rgba(115, 191, 255, 0.03));
     border: 1px solid rgba(115, 191, 255, 0.16);
+  }
+  .pa {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin-top: 1px;
   }
   .tv {
     color: var(--green);

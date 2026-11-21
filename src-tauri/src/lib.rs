@@ -153,12 +153,42 @@ fn save_state(app: tauri::AppHandle, state: Value) -> Result<(), String> {
     std::fs::rename(&tmp, &p).map_err(|e| e.to_string())
 }
 
+/// macOS: the trackpad "swipe between pages" gesture (three fingers, or two-or-three) arrives as an
+/// NSEvent swipe that the webview never sees. Watch for it and tell the UI to go back or forward.
+#[cfg(target_os = "macos")]
+fn install_swipe_back(app: &tauri::AppHandle) {
+    use objc2_app_kit::{NSEvent, NSEventMask};
+    use std::ptr::NonNull;
+    use tauri::Emitter;
+
+    let handle = app.clone();
+    let block = block2::RcBlock::new(move |ev: NonNull<NSEvent>| -> *mut NSEvent {
+        // AppKit convention (as in Safari): deltaX > 0 is the "back" swipe, deltaX < 0 is "forward"
+        let dx = unsafe { ev.as_ref().deltaX() };
+        if dx > 0.0 {
+            let _ = handle.emit("nav-back", ());
+        } else if dx < 0.0 {
+            let _ = handle.emit("nav-forward", ());
+        }
+        ev.as_ptr()
+    });
+    // the monitor must live for the whole app run
+    let monitor = unsafe { NSEvent::addLocalMonitorForEventsMatchingMask_handler(NSEventMask::Swipe, &block) };
+    std::mem::forget(monitor);
+    std::mem::forget(block);
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_window_state::Builder::default().build())
+        .setup(|_app| {
+            #[cfg(target_os = "macos")]
+            install_swipe_back(_app.handle());
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             derive_wallet,
             validate_address,

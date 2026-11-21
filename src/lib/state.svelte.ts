@@ -44,6 +44,8 @@ class AppState {
   #view = $state<View>({ name: "dashboard" });
   /** Panels visited before the current one, oldest first (for Back). */
   #history: View[] = [];
+  /** Panels left with Back, most recent last (for Forward); cleared when you open a new panel. */
+  #forward: View[] = [];
 
   get view(): View {
     return this.#view;
@@ -55,6 +57,7 @@ class AppState {
     if (!same) {
       this.#history.push(cur);
       if (this.#history.length > 50) this.#history.shift();
+      this.#forward = [];
     }
     this.#view = v;
   }
@@ -65,6 +68,20 @@ class AppState {
       const v = this.#history.pop()!;
       if (v.name === "wallet" && !this.wallet(v.id)) continue; // wallet was removed since
       if (v.name === this.#view.name && (v as any).id === (this.#view as any).id) continue;
+      this.#forward.push(this.#view);
+      this.#view = v;
+      return true;
+    }
+    return false;
+  }
+
+  /** Undo the last Back. Returns false when there is nowhere to go. */
+  forward(): boolean {
+    while (this.#forward.length) {
+      const v = this.#forward.pop()!;
+      if (v.name === "wallet" && !this.wallet(v.id)) continue;
+      if (v.name === this.#view.name && (v as any).id === (this.#view as any).id) continue;
+      this.#history.push(this.#view);
       this.#view = v;
       return true;
     }
