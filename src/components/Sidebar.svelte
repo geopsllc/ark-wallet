@@ -18,12 +18,9 @@
 
 <aside>
   <div class="brand">
-    <svg width="26" height="26" viewBox="0 0 1024 1024" aria-hidden="true">
-      <defs>
-        <linearGradient id="sb-fg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF6A6D" /><stop offset="1" stop-color="#C9292C" /></linearGradient>
-      </defs>
-      <path d="M512 150 L860 830 H716 L512 430 L308 830 H164 Z" fill="url(#sb-fg)" />
-      <rect x="390" y="640" width="244" height="84" rx="18" fill="url(#sb-fg)" />
+    <svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true">
+      <circle cx="16" cy="16" r="16" fill="#F70000" />
+      <path fill="#FFF" d="M15.947 13.347L5 24.89 15.996 7 27 25 15.947 13.347zm1.588 4.585h-3.422l1.76-1.936 1.662 1.953v-.017zm-6.6 3.177v-.024l1.941-1.987v-.009l5.92-.025 1.998 2.045h-9.858z" />
     </svg>
     <span>ARK Wallet</span>
   </div>

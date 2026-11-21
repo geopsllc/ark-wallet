@@ -34,10 +34,10 @@
   });
 
   function finishAdd(addr: string, publicKey?: string) {
-    const w = app.addWallet({ name: name.trim() || defaultName, address: addr, network, publicKey });
+    const w = app.addWallet({ name: name.trim(), address: addr, network, publicKey });
     if (w) {
       app.view = { name: "wallet", id: w.id };
-      app.toast("ok", `Added ${w.name}`);
+      app.toast("ok", "Wallet added");
       onclose();
     }
   }
@@ -80,7 +80,7 @@
           {#each Object.values(NETWORKS) as n}<option value={n.id}>{n.name} ({n.token})</option>{/each}
         </select>
       </label>
-      <label class="field">Name<input bind:value={name} placeholder={defaultName} /></label>
+      <label class="field">Name<input bind:value={name} placeholder="{defaultName} (or delegate name)" /></label>
     </div>
 
     {#if mode === "address"}

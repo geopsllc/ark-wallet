@@ -21,14 +21,25 @@
   async function load() {
     loading = true;
     error = "";
+    const fetchPage = () => ark.transactions(app.apiUrl(wallet.network), wallet.address, page, filter);
     try {
-      const r = await ark.transactions(app.apiUrl(wallet.network), wallet.address, page, filter);
+      let r;
+      try {
+        r = await fetchPage();
+      } catch (e: any) {
+        // public nodes hiccup now and then (5xx / timeouts): retry once before showing an error
+        if (e?.status && e.status < 500) throw e;
+        await new Promise((res) => setTimeout(res, 1200));
+        r = await fetchPage();
+      }
       txs = r.data;
       pageCount = Math.max(1, r.pageCount);
       total = r.totalCount;
     } catch (e: any) {
       error = String(e?.message ?? e);
       txs = [];
+      total = 0;
+      pageCount = 1;
     } finally {
       loading = false;
     }
@@ -126,7 +137,13 @@
     <button class="btn small" disabled={page >= pageCount} onclick={() => page++}>Next</button>
   </div>
 
-  {#if error}<div class="notice error">{error}</div>{/if}
+  {#if error}
+    <div class="notice error row">
+      <span>Could not load transactions: {error}</span>
+      <span class="spacer"></span>
+      <button class="btn small" onclick={load}><Icon name="refresh" size={13} /> Retry</button>
+    </div>
+  {/if}
 
   <div class="panel" style="overflow:hidden">
     <table class="list">
@@ -167,13 +184,13 @@
             <td class="memo muted ellipsis" title={t.vendorField ?? ""}>{t.vendorField ?? ""}</td>
             <td class="right num">
               {#if r.amount !== 0n}
-                <div class:green={r.amount > 0n} style="font-weight:500">
+                <div class:green={r.amount > 0n} class:red={r.amount < 0n} style="font-weight:500">
                   {r.amount > 0n ? "+" : "−"}{formatArk(r.amount < 0n ? -r.amount : r.amount)} <span class="faint small">{net.token}</span>
                 </div>
               {/if}
-              {#if t.sender === wallet.address}
-                <div class="faint small">fee {formatArk(t.fee, 8, 0)}</div>
-              {/if}
+              <div class="faint small" title={t.sender === wallet.address ? "Fee you paid" : "Fee paid by the sender"}>
+                fee {formatArk(t.fee, 8, 0)}{t.sender === wallet.address ? "" : " (sender)"}
+              </div>
             </td>
             <td class="right">
               {#if t.timestamp}

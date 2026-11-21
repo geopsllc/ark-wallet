@@ -45,6 +45,8 @@ export interface WalletEntry {
   network: NetworkId;
   publicKey?: string;
   addedAt: number;
+  /** Name was not chosen by the user: replace it with the delegate username when there is one */
+  autoName?: boolean;
 }
 
 export type FeeChoice = "min" | "avg";

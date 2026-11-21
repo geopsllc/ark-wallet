@@ -98,13 +98,20 @@ class AppState {
 
   // ---------- wallets ----------
 
-  addWallet(entry: Omit<WalletEntry, "id" | "addedAt">): WalletEntry | null {
+  addWallet(entry: Omit<WalletEntry, "id" | "addedAt" | "autoName">): WalletEntry | null {
     if (this.wallets.some((w) => w.address === entry.address)) {
       this.toast("info", "That wallet is already in your collection");
       return null;
     }
-    const w: WalletEntry = { ...entry, id: crypto.randomUUID(), addedAt: Date.now() };
-    this.wallets.push(w);
+    const auto = !entry.name.trim();
+    this.wallets.push({
+      ...entry,
+      name: auto ? `Wallet ${this.wallets.length + 1}` : entry.name.trim(),
+      autoName: auto,
+      id: crypto.randomUUID(),
+      addedAt: Date.now(),
+    });
+    const w = this.wallets[this.wallets.length - 1]; // the reactive proxy
     this.persist();
     this.refreshWallet(w);
     return w;
@@ -114,6 +121,7 @@ class AppState {
     const w = this.wallet(id);
     if (!w) return;
     w.name = name.trim() || w.name;
+    w.autoName = false;
     this.persist();
   }
 
@@ -133,16 +141,26 @@ class AppState {
     this.persist();
   }
 
-  async refreshWallet(w: WalletEntry) {
+  async refreshWallet(entry: WalletEntry) {
+    const w = this.wallets.find((x) => x.id === entry.id) ?? entry; // always mutate the reactive copy
     this.loading[w.address] = true;
     try {
       const d = await ark.wallet(this.apiUrl(w.network), w.address);
       this.data[w.address] = d;
       delete this.errors[w.address];
+      let changed = false;
       if (d.publicKey && !w.publicKey) {
         w.publicKey = d.publicKey;
-        this.persist();
+        changed = true;
       }
+      // Unnamed wallets (or ones still on a default "Wallet N" name) take their delegate username
+      const auto = w.autoName ?? /^Wallet \d+$/.test(w.name);
+      if (auto && d.delegate?.username && w.name !== d.delegate.username) {
+        w.name = d.delegate.username;
+        w.autoName = true;
+        changed = true;
+      }
+      if (changed) this.persist();
       const pend = this.pendingNonce[w.address];
       if (pend !== undefined && BigInt(d.nonce) >= pend) delete this.pendingNonce[w.address];
     } catch (e: any) {
