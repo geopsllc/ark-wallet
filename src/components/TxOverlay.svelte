@@ -70,7 +70,7 @@
       <div class="body">
         <div class="row" style="gap:6px">
           <span class="title num">{headline(e)}</span>
-          {#if fiat(e)}<span class="muted small num">≈ {fiat(e)}</span>{/if}
+          {#if fiat(e)}<span class="small num">≈ <span class="usd">{fiat(e)}</span></span>{/if}
         </div>
         <div class="small muted ellipsis">
           <b class="wname">{walletName(e)}</b>

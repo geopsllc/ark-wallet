@@ -147,7 +147,7 @@
   }
   .fiat {
     font-size: 16px;
-    color: var(--accent);
+    color: var(--green);
   }
   .meta {
     display: flex;
@@ -166,6 +166,7 @@
     gap: 10px;
   }
   .pv {
+    color: var(--green);
     font-size: 24px;
     font-weight: 650;
   }

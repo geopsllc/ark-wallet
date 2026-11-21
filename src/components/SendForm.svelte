@@ -149,7 +149,7 @@
         <input bind:value={amount} placeholder="0.00" inputmode="decimal" class="num" />
         <button class="btn" onclick={sendMax} disabled={defaultFee === null}>Max</button>
       </div>
-      {#if fiat(sum)}<span class="faint small">≈ {fiat(sum)}</span>{/if}
+      {#if fiat(sum)}<span class="small">≈ <span class="usd">{fiat(sum)}</span></span>{/if}
     </label>
   {:else}
     <div class="multi">
@@ -169,7 +169,7 @@
         </button>
         <span class="faint small">{rows.length} / 64</span>
         <span class="spacer"></span>
-        <span class="muted small">Total: <span class="num">{formatArk(sum)} {net.token}</span> {fiat(sum) ? `≈ ${fiat(sum)}` : ""}</span>
+        <span class="muted small">Total: <span class="num">{formatArk(sum)} {net.token}</span> {#if fiat(sum)}≈ <span class="usd">{fiat(sum)}</span>{/if}</span>
       </div>
     </div>
   {/if}

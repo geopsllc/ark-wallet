@@ -154,7 +154,7 @@
       <div class="summary">
         <div class="kv"><span class="muted">From</span><span>{wallet.name} <span class="mono faint">{wallet.address}</span></span></div>
         {#each draft.summary as [k, v]}
-          <div class="kv"><span class="muted">{k}</span><span class="val">{v}</span></div>
+          <div class="kv"><span class="muted">{k}</span><span class="val">{#if v.includes("  ≈ ")}{v.split("  ≈ ")[0]}  ≈ <span class="usd">{v.split("  ≈ ")[1]}</span>{:else}{v}{/if}</span></div>
         {/each}
       </div>
 
@@ -173,12 +173,12 @@
             <button class="fee-opt" class:on={choice === "min"} onclick={() => pick("min")}>
               <span class="lbl">Minimum</span>
               <span class="amt num">{formatArk(opts.min, 8, 0)} {net.token}</span>
-              <span class="sub">{fiat(opts.min) || "lowest the network accepts"}</span>
+              <span class="sub" class:usd={!!fiat(opts.min)}>{fiat(opts.min) || "lowest the network accepts"}</span>
             </button>
             <button class="fee-opt" class:on={choice === "avg"} onclick={() => pick("avg")}>
               <span class="lbl">Average</span>
               <span class="amt num">{formatArk(opts.avg, 8, 0)} {net.token}</span>
-              <span class="sub">{opts.avgIsStatic ? "no recent data · network default" : fiat(opts.avg) || "7-day average"}</span>
+              <span class="sub" class:usd={!opts.avgIsStatic && !!fiat(opts.avg)}>{opts.avgIsStatic ? "no recent data · network default" : fiat(opts.avg) || "7-day average"}</span>
             </button>
             <button class="fee-opt" class:on={choice === "custom"} onclick={() => pick("custom")}>
               <span class="lbl">Custom</span>
@@ -209,7 +209,7 @@
           <span class="muted">Total</span>
           <span class="spacer"></span>
           <span class="num" style="font-weight:600">{formatArk(total, 8, 2)} {net.token}</span>
-          {#if fiat(total)}<span class="muted small">≈ {fiat(total)}</span>{/if}
+          {#if fiat(total)}<span class="small">≈ <span class="usd">{fiat(total)}</span></span>{/if}
         </div>
         {#if insufficient}
           <div class="notice error">Insufficient balance: the wallet holds {formatArk(balance)} {net.token}.</div>
@@ -306,6 +306,9 @@
   }
   .fee-opt .amt {
     font-weight: 600;
+  }
+  .fee-opt .sub.usd {
+    color: var(--green);
   }
   .fee-opt .sub {
     font-size: 11.5px;

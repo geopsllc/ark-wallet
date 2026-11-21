@@ -193,7 +193,7 @@
     font-weight: 500;
   }
   .fiat {
-    color: var(--accent);
+    color: var(--green);
     font-size: 15px;
     min-height: 20px;
   }

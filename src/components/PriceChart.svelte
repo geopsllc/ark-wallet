@@ -60,13 +60,13 @@
     {#if hover !== null}
       {@const p = points[hover]}
       <div class="tip" style="left:{(stats.x(p[0]) / W) * 100}%">
-        <b>{formatFiat(p[1], currency)}</b>
+        <b class="usd">{formatFiat(p[1], currency)}</b>
         <span>{new Date(p[0]).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
       </div>
     {/if}
     <div class="axis faint small">
       <span>7 days ago</span>
-      <span>low {formatFiat(stats.min, currency)} · high {formatFiat(stats.max, currency)}</span>
+      <span>low <span class="usd">{formatFiat(stats.min, currency)}</span> · high <span class="usd">{formatFiat(stats.max, currency)}</span></span>
       <span>now</span>
     </div>
   </div>

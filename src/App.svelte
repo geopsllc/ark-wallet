@@ -46,6 +46,8 @@
   main {
     flex: 1;
     overflow-y: auto;
+    /* reserve the scrollbar lane so content width never jumps when it appears */
+    scrollbar-gutter: stable;
     min-width: 0;
   }
   .content {

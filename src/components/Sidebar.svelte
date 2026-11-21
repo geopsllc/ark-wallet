@@ -132,6 +132,7 @@
     border: 1px solid rgba(115, 191, 255, 0.16);
   }
   .tv {
+    color: var(--green);
     font-size: 21px;
     font-weight: 650;
     letter-spacing: -0.01em;

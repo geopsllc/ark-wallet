@@ -47,6 +47,9 @@ body,
   overflow: hidden;
   background: var(--bg);
 }
+.usd {
+  color: var(--green);
+}
 ::selection {
   background: rgba(115, 191, 255, 0.35);
 }
