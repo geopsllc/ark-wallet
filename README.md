@@ -7,6 +7,16 @@ for macOS, Windows and Linux.
 > ARK Desktop Wallet was archived in 2023 in favour of the web-based ARKVault; this project is a fresh native take on a
 > desktop wallet.
 
+> [!WARNING]
+> **Use at your own risk. The author accepts no responsibility for lost funds.**
+> This software is provided "as is", without warranty of any kind (see the [MIT license](LICENSE)). The author and
+> contributors are not liable for any loss of funds, passphrases or data, failed or mistaken transactions, or any other
+> damage resulting from the use of this software, whatever the cause.
+>
+> Before you trust it with real funds, you are strongly encouraged to **review the code yourself (or have it audited)
+> and [build it from source](#building-from-source)** rather than running a binary you did not build. Start with a small
+> amount, keep an offline backup of every passphrase, and never share a passphrase with anyone.
+
 ## Features
 
 - **Wallet collection**: add any number of mainnet / devnet wallets by address, by passphrase (only the address is
@@ -72,36 +82,111 @@ Every supported mainnet transaction type was signed with this code and broadcast
 - [Svelte 5](https://svelte.dev) + TypeScript + Vite UI
 - Data: official ARK Core v3 REST API; prices: CoinGecko public API
 
-## Building
+## Building from source
 
-Prerequisites on every platform: [Rust](https://rustup.rs) (stable) and [Node.js](https://nodejs.org) 20+.
+Building it yourself is the recommended way to run ARK Wallet: you know exactly which code you are running.
+Supported platforms are **macOS**, **Windows**, and **Linux** (Debian/Ubuntu-based and Red Hat/Fedora-based).
 
-- **macOS**: Xcode Command Line Tools (`xcode-select --install`)
-- **Windows**: Microsoft C++ Build Tools and WebView2 (already installed on Windows 10/11)
-- **Linux** (Debian/Ubuntu):
-  ```bash
-  sudo apt install libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev
-  ```
+Every platform needs:
 
-Then:
+- [Git](https://git-scm.com)
+- [Rust](https://rustup.rs) (stable toolchain, installed with `rustup`)
+- [Node.js](https://nodejs.org) 20 or newer (LTS recommended), which includes `npm`
 
-```bash
-npm install
-npm run tauri dev      # run in development
-npm run tauri build    # installers in src-tauri/target/release/bundle/
-```
+plus the platform-specific system packages below. Then follow [Build](#build) (the same on every OS).
 
-`tauri build` produces `.app`/`.dmg` on macOS, `.msi`/`.exe` (NSIS) on Windows, and `.deb`/`.rpm`/`.AppImage` on Linux.
-Each platform builds its own installers.
-
-Tests for the crypto core:
+### macOS (12 Monterey or newer, Apple Silicon or Intel)
 
 ```bash
-cd src-tauri && cargo test
+xcode-select --install                                           # Apple's command line tools (compiler, git)
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh   # Rust
+brew install node                                                # Node.js (or use the installer from nodejs.org)
 ```
 
-`npm run dev` alone opens the UI in a normal browser with a mocked backend (read-only: no signing). This is useful for
-UI work.
+The build produces `ARK Wallet.app` and a `.dmg` in `src-tauri/target/release/bundle/macos/` and `.../bundle/dmg/`.
+A self-built app is not notarized; it runs on the machine that built it. If you copy it to another Mac, Gatekeeper
+may ask you to allow it in System Settings → Privacy & Security.
+
+### Windows (10 or 11, x64)
+
+1. Install **Microsoft C++ Build Tools**: run the [Visual Studio Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/)
+   installer and select the **"Desktop development with C++"** workload.
+2. **WebView2** is already part of Windows 10 (21H2+) and 11. On older systems install the
+   [Evergreen runtime](https://developer.microsoft.com/microsoft-edge/webview2/).
+3. Install Git, Rust and Node.js, for example with `winget` in PowerShell:
+
+   ```powershell
+   winget install --id Git.Git
+   winget install --id Rustlang.Rustup
+   winget install --id OpenJS.NodeJS.LTS
+   ```
+
+   Open a new terminal afterwards and make sure the MSVC toolchain is the default:
+
+   ```powershell
+   rustup default stable-msvc
+   ```
+
+The build produces an `.msi` installer in `src-tauri\target\release\bundle\msi\` and an NSIS `-setup.exe` in
+`src-tauri\target\release\bundle\nsis\`.
+
+### Linux: Debian / Ubuntu / Linux Mint / Pop!_OS (Debian 12+, Ubuntu 22.04+)
+
+```bash
+sudo apt update
+sudo apt install -y build-essential curl wget file git pkg-config \
+  libwebkit2gtk-4.1-dev libssl-dev libxdo-dev libayatana-appindicator3-dev librsvg2-dev
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh   # Rust
+```
+
+Install Node.js 20+ from [nodejs.org](https://nodejs.org/en/download) or your preferred version manager (the `nodejs`
+package in older distro releases is too old).
+
+Build only the Debian package and AppImage with `npm run tauri build -- --bundles deb,appimage`; install the result
+with `sudo apt install ./src-tauri/target/release/bundle/deb/*.deb`.
+
+### Linux: Fedora / RHEL / Rocky / AlmaLinux (Fedora 38+, RHEL 9+)
+
+```bash
+sudo dnf check-update
+sudo dnf install -y webkit2gtk4.1-devel openssl-devel curl wget file git \
+  libappindicator-gtk3-devel librsvg2-devel libxdo-devel
+sudo dnf group install -y "c-development"     # Fedora 41+; on older Fedora / RHEL: "Development Tools"
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh   # Rust
+sudo dnf install -y nodejs                    # Fedora; on RHEL use: sudo dnf module install -y nodejs:20
+```
+
+On RHEL, Rocky and AlmaLinux, enable the **CRB** repository and **EPEL** first, because some of the development
+packages (for example `libxdo-devel`, `libappindicator-gtk3-devel`) live there:
+
+```bash
+sudo dnf config-manager --set-enabled crb
+sudo dnf install -y epel-release
+```
+
+Build only the RPM with `npm run tauri build -- --bundles rpm`; install it with
+`sudo dnf install ./src-tauri/target/release/bundle/rpm/*.rpm`.
+
+### Build
+
+```bash
+git clone https://github.com/geopsllc/ark-wallet.git
+cd ark-wallet
+npm ci                  # exact dependency versions from package-lock.json
+npm run tauri build     # release build + installers in src-tauri/target/release/bundle/
+```
+
+Optional checks before you build:
+
+```bash
+cd src-tauri && cargo test    # crypto, serialization and fee tests (against real mainnet transactions)
+cd .. && npm run check        # TypeScript / Svelte type check
+```
+
+`npm run tauri dev` runs the app in development mode with hot reload. `npm run dev` alone opens the UI in a normal
+browser with a mocked, read-only backend (no signing), which is handy for UI work.
+
+Each platform builds its own installers; cross-compiling between operating systems is not supported.
 
 ## License
 
