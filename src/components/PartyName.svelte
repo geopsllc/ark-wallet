@@ -25,10 +25,12 @@
 
 <button
   class="xlink"
-  title="{address} · open in explorer"
+  title={own ? `${address} · open ${own.name}` : `${address} · open in explorer`}
   onclick={(e) => {
     e.stopPropagation();
-    openExternal(app.explorerAddress(network, address));
+    // your own wallets open their panel in the app; anything else goes to the explorer
+    if (own) app.view = { name: "wallet", id: own.id };
+    else openExternal(app.explorerAddress(network, address));
   }}
 >
   {#if own}
@@ -38,7 +40,7 @@
   {:else}
     <span class="mono">{shortAddress(address, chars)}</span>
   {/if}
-  <Icon name="external" size={11} />
+  <Icon name={own ? "chevron" : "external"} size={11} />
 </button>
 
 <style>
