@@ -1,5 +1,5 @@
-mod crypto;
-mod tx;
+pub mod crypto;
+pub mod tx;
 
 use serde::Serialize;
 use serde_json::Value;

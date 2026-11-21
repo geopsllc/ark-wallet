@@ -51,6 +51,21 @@ signature. This was checked against a live node: a fee of exactly this minimum p
 less is rejected with `ERR_LOW_FEE`. The "Average" option uses the node's 7-day `/node/fees` statistics, or the static
 network fee when there's no recent data for that transaction type.
 
+## Tested on mainnet
+
+Every supported mainnet transaction type was signed with this code and broadcast at its computed minimum fee
+(test wallet `AZChBii7Qj4kipkNr3EuMVTqzmMPUT9KPH`, 2026-11-21). All were accepted and confirmed:
+
+| Transaction | Size | Fee (ARK) | ID |
+|---|---|---|---|
+| Transfer with memo | 175 B | 0.00564 | `6284ee42b4515f2dc02e2ebaaee97cc8594a969c70584888caf20e58db4a6715` |
+| Multipayment (2) with memo | 200 B | 0.018 | `75724af1d5fab6b56648c022bd62f0ead82b0f6b6a2c69e4618fc315d72da2de` |
+| Vote | 158 B | 0.00537 | `5d291b306936f67871c661aa7374656506351a5fd48f3b4c574e2e1c3499907e` |
+| Switch vote (unvote + vote in one) | 192 B | 0.00588 | `a35a51d8a311d8192ed9cdee68deefe0fd1576ee69e39f0a7e27a8cf3487f5f5` |
+| Unvote | 158 B | 0.00537 | `e3c5582e8108e0ce64dceed41429100002db9f66a5294324dc7f000627b97777` |
+| Second passphrase registration | 156 B | 0.00984 | `69bc8c9e2ca7ffa76c5c0fbd30fc706de7dd85ac911f6f3dfce14f5baf0b4ae7` |
+| Transfer signed with both passphrases | 220 B | 0.0063 | `056dcef401172d23a21293e7e112659e53b072d97c44e021486b0f25a28d4930` |
+
 ## Tech stack
 
 - [Tauri 2](https://tauri.app) shell, with a Rust core for keys, AIP-11 serialization, signing and HTTP (`k256`, `bip39`)
