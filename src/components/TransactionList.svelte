@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Sym from "./Sym.svelte";
   import Icon from "./Icon.svelte";
   import DelegateName from "./DelegateName.svelte";
   import { app } from "../lib/state.svelte";
@@ -125,11 +126,11 @@
             <td class="right num">
               {#if r.amount !== 0n}
                 <div class:green={r.amount > 0n} class:red={r.amount < 0n} style="font-weight:500">
-                  {r.amount > 0n ? "+" : "−"}{formatArk(r.amount < 0n ? -r.amount : r.amount)} <span class="faint small">{net.token}</span>
+                  {r.amount > 0n ? "+" : "−"}{formatArk(r.amount < 0n ? -r.amount : r.amount)}<Sym network={wallet.network} />
                 </div>
               {/if}
               <div class="faint small" title={t.sender === wallet.address ? "Fee you paid" : "Fee paid by the sender"}>
-                fee {formatArk(t.fee, 8, 0)}{t.sender === wallet.address ? "" : " (sender)"}
+                fee {formatArk(t.fee, 8, 0)}<Sym network={wallet.network} />{t.sender === wallet.address ? "" : " (sender)"}
               </div>
             </td>
             <td class="right">

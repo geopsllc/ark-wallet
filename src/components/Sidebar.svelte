@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Sym from "./Sym.svelte";
   import Icon from "./Icon.svelte";
   import WalletName from "./WalletName.svelte";
   import { walletColor } from "../lib/colors";
@@ -52,7 +53,7 @@
   <div class="total">
     <div class="faint small">Portfolio</div>
     <div class="tv num">{app.portfolioFiat !== null ? formatFiat(app.portfolioFiat, app.settings.currency) : "—"}</div>
-    <div class="muted small num">{formatArk(app.portfolioArk, 2, 2)} ARK</div>
+    <div class="muted small num">{formatArk(app.portfolioArk, 2, 2)}<Sym /></div>
   </div>
 
   <nav>
@@ -86,7 +87,7 @@
         </div>
         <div class="row" style="gap:6px">
           <div class="wbal num">
-            {d ? formatArk(d.balance, 2, 2) : "…"} <span class="tok" title={NETWORKS[w.network].token}>{NETWORKS[w.network].symbol}</span>
+            {d ? formatArk(d.balance, 2, 2) : "…"} <Sym network={w.network} />
           </div>
           <span class="spacer"></span>
           <span class="chev"><Icon name="chevron" size={14} /></span>
@@ -261,11 +262,6 @@
     font-size: 13px;
     font-weight: 600;
     color: var(--text);
-  }
-  .tok {
-    color: var(--accent);
-    font-weight: 500;
-    font-size: 11.5px;
   }
   .empty {
     padding: 8px 10px;

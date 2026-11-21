@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Sym from "./Sym.svelte";
   import Modal from "./Modal.svelte";
   import SecretInput from "./SecretInput.svelte";
   import CopyButton from "./CopyButton.svelte";
@@ -154,7 +155,7 @@
       <div class="summary">
         <div class="kv"><span class="muted">From</span><span>{wallet.name} <span class="mono faint">{wallet.address}</span></span></div>
         {#each draft.summary as [k, v]}
-          <div class="kv"><span class="muted">{k}</span><span class="val">{#if v.includes("  ≈ ")}{v.split("  ≈ ")[0]}  ≈ <span class="usd">{v.split("  ≈ ")[1]}</span>{:else}{v}{/if}</span></div>
+          <div class="kv"><span class="muted">{k}</span><span class="val">{#each v.split("  ≈ ") as part, i}{#if i > 0}  ≈ <span class="usd">{part}</span>{:else if part.endsWith(" " + net.token) && /\d/.test(part)}{part.slice(0, -net.token.length - 1)}<Sym network={wallet.network} />{:else}{part}{/if}{/each}</span></div>
         {/each}
       </div>
 
@@ -172,12 +173,12 @@
           <div class="fee-opts">
             <button class="fee-opt" class:on={choice === "min"} onclick={() => pick("min")}>
               <span class="lbl">Minimum</span>
-              <span class="amt num">{formatArk(opts.min, 8, 0)} {net.token}</span>
+              <span class="amt num">{formatArk(opts.min, 8, 0)}<Sym network={wallet.network} /></span>
               <span class="sub" class:usd={!!fiat(opts.min)}>{fiat(opts.min) || "lowest the network accepts"}</span>
             </button>
             <button class="fee-opt" class:on={choice === "avg"} onclick={() => pick("avg")}>
               <span class="lbl">Average</span>
-              <span class="amt num">{formatArk(opts.avg, 8, 0)} {net.token}</span>
+              <span class="amt num">{formatArk(opts.avg, 8, 0)}<Sym network={wallet.network} /></span>
               <span class="sub" class:usd={!opts.avgIsStatic && !!fiat(opts.avg)}>{opts.avgIsStatic ? "no recent data · network default" : fiat(opts.avg) || "7-day average"}</span>
             </button>
             <button class="fee-opt" class:on={choice === "custom"} onclick={() => pick("custom")}>
@@ -208,11 +209,11 @@
         <div class="total">
           <span class="muted">Total</span>
           <span class="spacer"></span>
-          <span class="num" style="font-weight:600">{formatArk(total, 8, 2)} {net.token}</span>
+          <span class="num" style="font-weight:600">{formatArk(total, 8, 2)}<Sym network={wallet.network} /></span>
           {#if fiat(total)}<span class="small">≈ <span class="usd">{fiat(total)}</span></span>{/if}
         </div>
         {#if insufficient}
-          <div class="notice error">Insufficient balance: the wallet holds {formatArk(balance)} {net.token}.</div>
+          <div class="notice error">Insufficient balance: the wallet holds {formatArk(balance)}<Sym network={wallet.network} />.</div>
         {/if}
       {/if}
 

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Sym from "./Sym.svelte";
   import ConfirmTx from "./ConfirmTx.svelte";
   import Icon from "./Icon.svelte";
   import { app } from "../lib/state.svelte";
@@ -131,7 +132,7 @@
       <button class:on={mode === "multi"} onclick={() => (mode = "multi")}>Multipayment</button>
     </div>
     <span class="spacer"></span>
-    <span class="muted small">Available: <span class="num">{formatArk(balance)} {net.token}</span></span>
+    <span class="muted small">Available: <span class="num">{formatArk(balance)}<Sym network={wallet.network} /></span></span>
   </div>
 
   <datalist id="own-{wallet.id}">
@@ -169,7 +170,7 @@
         </button>
         <span class="faint small">{rows.length} / 64</span>
         <span class="spacer"></span>
-        <span class="muted small">Total: <span class="num">{formatArk(sum)} {net.token}</span> {#if fiat(sum)}≈ <span class="usd">{fiat(sum)}</span>{/if}</span>
+        <span class="muted small">Total: <span class="num">{formatArk(sum)}<Sym network={wallet.network} /></span> {#if fiat(sum)}≈ <span class="usd">{fiat(sum)}</span>{/if}</span>
       </div>
     </div>
   {/if}
@@ -188,7 +189,7 @@
       <span class="dot">·</span>
       <span>Minimum fee <b class="num">{formatArk(est.min, 8, 0)}</b></span>
       <span class="dot">·</span>
-      <span>Average <b class="num">{formatArk(est.avg, 8, 0)}</b> {net.token}</span>
+      <span>Average <b class="num">{formatArk(est.avg, 8, 0)}<Sym network={wallet.network} /></b></span>
       {#if memoBytes > 0}<span class="faint">(memo adds {memoBytes} bytes)</span>{/if}
     </div>
   {/if}

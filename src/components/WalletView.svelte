@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Sym from "./Sym.svelte";
   import Icon from "./Icon.svelte";
   import CopyButton from "./CopyButton.svelte";
   import DelegateName from "./DelegateName.svelte";
@@ -96,7 +97,7 @@
 
     <div class="balance-row">
       <div>
-        <div class="bal num">{d ? formatArk(d.balance, 8, 2) : "…"} <span class="tok" title={net.token}>{net.symbol}</span></div>
+        <div class="bal num">{d ? formatArk(d.balance, 8, 2) : "…"} <Sym network={wallet.network} /></div>
         <div class="fiat num">{fiat !== null ? formatFiat(fiat, app.settings.currency) : net.hasFiatValue ? "" : "Test network: no market value"}</div>
       </div>
       <span class="spacer"></span>
@@ -186,11 +187,6 @@
     font-size: 30px;
     font-weight: 650;
     letter-spacing: -0.02em;
-  }
-  .tok {
-    font-size: 16px;
-    color: var(--muted);
-    font-weight: 500;
   }
   .fiat {
     color: var(--green);

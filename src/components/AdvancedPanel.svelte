@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Sym from "./Sym.svelte";
   import ConfirmTx from "./ConfirmTx.svelte";
   import Icon from "./Icon.svelte";
   import MnemonicSetup from "./MnemonicSetup.svelte";
@@ -109,7 +110,7 @@
         {:else}<span class="badge warn">Standby · #{data.delegate.rank}</span>{/if}
       </div>
       {#if data.delegate.voteBalance}
-        <div class="muted small">Vote weight: <span class="num">{formatArk(data.delegate.voteBalance, 0, 0)} {net.token}</span></div>
+        <div class="muted small">Vote weight: <span class="num">{formatArk(data.delegate.voteBalance, 0, 0)}<Sym network={wallet.network} /></span></div>
       {/if}
       {#if !data.delegate.resigned}
         <div class="notice warn">Resigning permanently removes this delegate from forging. It cannot be undone.</div>

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Sym from "./Sym.svelte";
   import Icon from "./Icon.svelte";
   import PriceChart from "./PriceChart.svelte";
   import DelegateName from "./DelegateName.svelte";
@@ -33,11 +34,11 @@
   <div class="top">
     <div class="card portfolio">
       <div class="muted small one" title="Mainnet wallets, excluding delegate wallets">Total balance</div>
-      <div class="big num">{formatArk(totalArk, 4, 2)} <span class="tok" title="ARK">{NETWORKS.mainnet.symbol}</span></div>
+      <div class="big num">{formatArk(totalArk, 4, 2)} <Sym /></div>
       <div class="fiat num">{totalFiat !== null ? formatFiat(totalFiat, cur) : "—"}</div>
       {#if delegateArk > 0n}
         <div class="faint small num one" title="Delegate balances are paid out to voters, so they're kept out of the total">
-          Excludes {formatArk(delegateArk, 2, 2)} ARK in delegates
+          Excludes {formatArk(delegateArk, 2, 2)}<Sym /> in delegates
         </div>
       {/if}
       <div class="meta">
@@ -96,7 +97,7 @@
             {#if d?.delegate}<span class="badge brand">Delegate</span>{/if}
           </div>
           <div class="faint small"><Address address={w.address} /></div>
-          <div class="wb num">{d ? formatArk(d.balance, 4, 2) : "…"} <span class="tok small" title={NETWORKS[w.network].token}>{NETWORKS[w.network].symbol}</span></div>
+          <div class="wb num">{d ? formatArk(d.balance, 4, 2) : "…"} <Sym network={w.network} /></div>
           <div class="row small">
             <span class="fiatv num">{f !== null ? formatFiat(f, cur) : ""}</span>
             <span class="spacer"></span>
@@ -153,11 +154,6 @@
     font-weight: 650;
     letter-spacing: -0.02em;
     margin-top: 4px;
-  }
-  .tok {
-    font-size: 16px;
-    color: var(--muted);
-    font-weight: 500;
   }
   .fiat {
     font-size: 16px;
@@ -221,10 +217,6 @@
   .wn {
     display: flex;
     min-width: 0;
-  }
-  .tok {
-    color: var(--accent);
-    font-weight: 500;
   }
   .fiatv {
     color: var(--green);

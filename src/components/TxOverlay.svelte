@@ -1,11 +1,11 @@
 <script lang="ts">
+  import Sym from "./Sym.svelte";
   import { fly } from "svelte/transition";
   import { flip } from "svelte/animate";
   import Icon from "./Icon.svelte";
   import DelegateName from "./DelegateName.svelte";
   import { app, type TxEvent } from "../lib/state.svelte";
   import { formatArk, formatFiat, shortAddress } from "../lib/format";
-  import { NETWORKS } from "../lib/types";
 
   const SHOW_MS = 12000;
   const timers = new Map<string, ReturnType<typeof setTimeout>>();
@@ -37,10 +37,9 @@
     return w ? w.name : shortAddress(addr, 6);
   }
   function headline(e: TxEvent) {
-    const tok = NETWORKS[e.network].token;
     const a = e.row.amount;
-    if (a > 0n) return `Received ${formatArk(a)} ${tok}`;
-    if (a < 0n) return `Sent ${formatArk(-a)} ${tok}`;
+    if (a > 0n) return `Received ${formatArk(a)}`;
+    if (a < 0n) return `Sent ${formatArk(-a)}`;
     return e.row.label;
   }
   function fiat(e: TxEvent) {
@@ -69,7 +68,7 @@
       <div class="icon"><Icon name={e.row.icon} size={18} /></div>
       <div class="body">
         <div class="row" style="gap:6px">
-          <span class="title num">{headline(e)}</span>
+          <span class="title num">{headline(e)}{#if e.row.amount !== 0n}<Sym network={e.network} />{/if}</span>
           {#if fiat(e)}<span class="small num">≈ <span class="usd">{fiat(e)}</span></span>{/if}
         </div>
         <div class="small muted ellipsis">
