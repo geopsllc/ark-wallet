@@ -57,6 +57,12 @@
 
   const describe = (t: ApiTransaction) => describeTx(t, wallet.address);
 
+  /** Multipayment recipient to name in the row: one of your other wallets if it's among them, else the first. */
+  function shownRecipient(payments: { recipientId: string }[]): string {
+    const own = new Set(app.wallets.filter((w) => w.address !== wallet.address).map((w) => w.address));
+    return (payments.find((p) => own.has(p.recipientId)) ?? payments.find((p) => p.recipientId === wallet.address) ?? payments[0]).recipientId;
+  }
+
 </script>
 
 <div class="stack">
@@ -112,7 +118,7 @@
                     {:else if r.counterparty}
                       {r.dir === "in" ? "from" : "to"} <PartyName network={wallet.network} address={r.counterparty} />
                     {:else if payments.length}
-                      to <PartyName network={wallet.network} address={payments[0].recipientId} />{#if payments.length > 1}<span>&nbsp;+{payments.length - 1} more</span>{/if}
+                      to <PartyName network={wallet.network} address={shownRecipient(payments)} />{#if payments.length > 1}<span>&nbsp;+ {payments.length - 1} more</span>{/if}
                     {:else}
                       by <PartyName network={wallet.network} address={t.sender} />
                     {/if}
