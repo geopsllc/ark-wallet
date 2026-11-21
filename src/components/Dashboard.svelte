@@ -30,12 +30,12 @@
 
   <div class="top">
     <div class="card portfolio">
-      <div class="muted small">Total balance (mainnet{delegateArk > 0n ? ", excluding delegates" : ""})</div>
+      <div class="muted small one" title="Mainnet wallets, excluding delegate wallets">Total balance</div>
       <div class="big num">{formatArk(totalArk, 4, 2)} <span class="tok">ARK</span></div>
       <div class="fiat num">{totalFiat !== null ? formatFiat(totalFiat, cur) : "—"}</div>
       {#if delegateArk > 0n}
-        <div class="faint small num" title="Delegate balances are paid out to voters, so they're kept out of the total">
-          + {formatArk(delegateArk, 2, 2)} ARK in delegate wallets (not included)
+        <div class="faint small num one" title="Delegate balances are paid out to voters, so they're kept out of the total">
+          Excludes {formatArk(delegateArk, 2, 2)} ARK in delegates
         </div>
       {/if}
       <div class="meta">
@@ -119,6 +119,11 @@
     display: grid;
     grid-template-columns: minmax(280px, 1fr) 2fr;
     gap: 16px;
+  }
+  .one {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .portfolio {
     display: flex;
