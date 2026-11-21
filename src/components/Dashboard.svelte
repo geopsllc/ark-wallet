@@ -10,8 +10,9 @@
 
   const cur = $derived(app.settings.currency);
   const mainnetWallets = $derived(app.wallets.filter((w) => w.network === "mainnet"));
-  const totalArk = $derived(mainnetWallets.reduce((s, w) => s + BigInt(app.data[w.address]?.balance ?? "0"), 0n));
-  const totalFiat = $derived(app.price ? (Number(totalArk) / 1e8) * app.price.price : null);
+  const totalArk = $derived(app.portfolioArk);
+  const totalFiat = $derived(app.portfolioFiat);
+  const delegateArk = $derived(app.delegateArk);
   const voting = $derived(mainnetWallets.filter((w) => app.data[w.address]?.vote).length);
 
   function compact(n?: number) {
@@ -29,9 +30,14 @@
 
   <div class="top">
     <div class="card portfolio">
-      <div class="muted small">Total balance (mainnet)</div>
+      <div class="muted small">Total balance (mainnet{delegateArk > 0n ? ", excluding delegates" : ""})</div>
       <div class="big num">{formatArk(totalArk, 4, 2)} <span class="tok">ARK</span></div>
       <div class="fiat num">{totalFiat !== null ? formatFiat(totalFiat, cur) : "—"}</div>
+      {#if delegateArk > 0n}
+        <div class="faint small num" title="Delegate balances are paid out to voters, so they're kept out of the total">
+          + {formatArk(delegateArk, 2, 2)} ARK in delegate wallets (not included)
+        </div>
+      {/if}
       <div class="meta">
         <div><span class="faint small">Wallets</span><b class="num">{app.wallets.length}</b></div>
         <div><span class="faint small">Voting</span><b class="num">{voting} / {mainnetWallets.length}</b></div>

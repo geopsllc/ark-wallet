@@ -290,6 +290,25 @@ class AppState {
     }
   }
 
+  /** Wallets counted in the portfolio total: mainnet, and not delegates (their balance is shared out to voters). */
+  isDelegate(w: WalletEntry): boolean {
+    return !!this.data[w.address]?.delegate;
+  }
+  get portfolioWallets(): WalletEntry[] {
+    return this.wallets.filter((w) => w.network === "mainnet" && !this.isDelegate(w));
+  }
+  get portfolioArk(): bigint {
+    return this.portfolioWallets.reduce((s, w) => s + BigInt(this.data[w.address]?.balance ?? "0"), 0n);
+  }
+  get delegateArk(): bigint {
+    return this.wallets
+      .filter((w) => w.network === "mainnet" && this.isDelegate(w))
+      .reduce((s, w) => s + BigInt(this.data[w.address]?.balance ?? "0"), 0n);
+  }
+  get portfolioFiat(): number | null {
+    return this.price ? (Number(this.portfolioArk) / 1e8) * this.price.price : null;
+  }
+
   fiatValue(network: NetworkId, arktoshi: string | bigint | undefined): number | null {
     if (!NETWORKS[network].hasFiatValue || !this.price || arktoshi === undefined) return null;
     return (Number(BigInt(arktoshi)) / 1e8) * this.price.price;
