@@ -119,6 +119,9 @@ a:hover {
 .xlink {
   all: unset;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
   border-radius: 3px;
 }
 .xlink:hover {

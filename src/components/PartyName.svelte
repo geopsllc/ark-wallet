@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Icon from "./Icon.svelte";
   import { app } from "../lib/state.svelte";
   import { ark } from "../lib/ark";
   import { walletColor } from "../lib/colors";
@@ -37,6 +38,7 @@
   {:else}
     <span class="mono">{shortAddress(address, chars)}</span>
   {/if}
+  <Icon name="external" size={11} />
 </button>
 
 <style>

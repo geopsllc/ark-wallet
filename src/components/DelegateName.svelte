@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Icon from "./Icon.svelte";
   import { app } from "../lib/state.svelte";
   import { ark } from "../lib/ark";
   import { openExternal } from "../lib/backend";
@@ -29,7 +30,7 @@
     onclick={(e) => {
       e.stopPropagation();
       openExternal(app.explorerAddress(network, address));
-    }}>{name}</button
+    }}>{name}<Icon name="external" size={11} /></button
   >
 {:else}
   <span class:accent={!!name}>{name || shortAddress(publicKey, 6)}</span>
