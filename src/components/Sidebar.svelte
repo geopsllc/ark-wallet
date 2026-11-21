@@ -86,9 +86,7 @@
           {#if app.errors[w.address]}<span class="red" title={app.errors[w.address]}>!</span>{/if}
         </div>
         <div class="row" style="gap:6px">
-          <div class="wbal num">
-            {d ? formatArk(d.balance, 2, 2) : "…"} <Sym network={w.network} />
-          </div>
+          <div class="wbal num">{d ? formatArk(d.balance, 2, 2) : "…"}<Sym network={w.network} /></div>
           <span class="spacer"></span>
           <span class="chev"><Icon name="chevron" size={14} /></span>
         </div>

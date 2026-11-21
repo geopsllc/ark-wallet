@@ -34,7 +34,7 @@
   <div class="top">
     <div class="card portfolio">
       <div class="muted small one" title="Mainnet wallets, excluding delegate wallets">Total balance</div>
-      <div class="big num">{formatArk(totalArk, 4, 2)} <Sym /></div>
+      <div class="big num">{formatArk(totalArk, 4, 2)}<Sym /></div>
       <div class="fiat num">{totalFiat !== null ? formatFiat(totalFiat, cur) : "—"}</div>
       {#if delegateArk > 0n}
         <div class="faint small num one" title="Delegate balances are paid out to voters, so they're kept out of the total">
@@ -97,7 +97,7 @@
             {#if d?.delegate}<span class="badge brand">Delegate</span>{/if}
           </div>
           <div class="faint small"><Address address={w.address} /></div>
-          <div class="wb num">{d ? formatArk(d.balance, 4, 2) : "…"} <Sym network={w.network} /></div>
+          <div class="wb num">{d ? formatArk(d.balance, 4, 2) : "…"}<Sym network={w.network} /></div>
           <div class="row small">
             <span class="fiatv num">{f !== null ? formatFiat(f, cur) : ""}</span>
             <span class="spacer"></span>

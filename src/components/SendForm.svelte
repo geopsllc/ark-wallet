@@ -187,7 +187,7 @@
       <Icon name="layers" size={13} />
       <span>Size <b class="num">{est.size}</b> bytes</span>
       <span class="dot">·</span>
-      <span>Minimum fee <b class="num">{formatArk(est.min, 8, 0)}</b></span>
+      <span>Minimum fee <b class="num">{formatArk(est.min, 8, 0)}<Sym network={wallet.network} /></b></span>
       <span class="dot">·</span>
       <span>Average <b class="num">{formatArk(est.avg, 8, 0)}<Sym network={wallet.network} /></b></span>
       {#if memoBytes > 0}<span class="faint">(memo adds {memoBytes} bytes)</span>{/if}

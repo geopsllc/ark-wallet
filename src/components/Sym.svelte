@@ -13,6 +13,7 @@
     font-size: 1em;
     font-weight: inherit;
     color: var(--brand);
-    margin-left: 0.12em;
+    /* the only gap between a number and its symbol: same everywhere, scales with the type */
+    margin-left: 0.2em;
   }
 </style>

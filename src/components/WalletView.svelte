@@ -97,7 +97,7 @@
 
     <div class="balance-row">
       <div>
-        <div class="bal num">{d ? formatArk(d.balance, 8, 2) : "…"} <Sym network={wallet.network} /></div>
+        <div class="bal num">{d ? formatArk(d.balance, 8, 2) : "…"}<Sym network={wallet.network} /></div>
         <div class="fiat num">{fiat !== null ? formatFiat(fiat, app.settings.currency) : net.hasFiatValue ? "" : "Test network: no market value"}</div>
       </div>
       <span class="spacer"></span>

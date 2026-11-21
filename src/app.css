@@ -413,7 +413,8 @@ table.list td {
 table.list tr:hover td {
   background: rgba(255, 255, 255, 0.02);
 }
-.right {
+.right,
+table.list th.right {
   text-align: right;
 }
 
