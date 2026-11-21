@@ -56,6 +56,7 @@ export interface Settings {
   currency: string;
   feeChoice: FeeChoice;
   refreshSeconds: number;
+  sidebarWidth?: number;
 }
 
 export interface PersistedState {

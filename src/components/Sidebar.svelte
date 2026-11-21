@@ -6,9 +6,40 @@
 
   let { onadd }: { onadd: () => void } = $props();
 
+  const MIN = 200;
+  const MAX = 420;
+  const DEFAULT = 248;
+  let dragging = $state(false);
+  const width = $derived(Math.min(MAX, Math.max(MIN, app.settings.sidebarWidth ?? DEFAULT)));
+
+  function startDrag(e: PointerEvent) {
+    e.preventDefault();
+    dragging = true;
+    const startX = e.clientX;
+    const startW = width;
+    const move = (ev: PointerEvent) => {
+      app.settings.sidebarWidth = Math.round(Math.min(MAX, Math.max(MIN, startW + ev.clientX - startX)));
+    };
+    const up = () => {
+      dragging = false;
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+      app.persist();
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+  }
+
+  function resetWidth() {
+    app.settings.sidebarWidth = DEFAULT;
+    app.persist();
+  }
+
 </script>
 
-<aside>
+<aside style="width:{width}px" class:dragging>
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <div class="resizer" onpointerdown={startDrag} ondblclick={resetWidth} title="Drag to resize · double-click to reset"></div>
   <div class="brand">
     <svg width="34" height="28" viewBox="4.5 6.5 23 19" aria-hidden="true">
       <path fill="#F70000" d="M15.947 13.347L5 24.89 15.996 7 27 25 15.947 13.347zm1.588 4.585h-3.422l1.76-1.936 1.662 1.953v-.017zm-6.6 3.177v-.024l1.941-1.987v-.009l5.92-.025 1.998 2.045h-9.858z" />
@@ -65,7 +96,7 @@
 
 <style>
   aside {
-    width: 248px;
+    position: relative;
     flex-shrink: 0;
     background: var(--sidebar);
     border-right: 1px solid var(--border);
@@ -156,7 +187,34 @@
   }
   .wname {
     font-weight: 500;
-    max-width: 150px;
+    min-width: 0;
+    flex-shrink: 1;
+  }
+  .resizer {
+    position: absolute;
+    top: 0;
+    right: -4px;
+    width: 8px;
+    height: 100%;
+    cursor: col-resize;
+    z-index: 5;
+  }
+  .resizer::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 3px;
+    width: 2px;
+    background: transparent;
+    transition: background 0.15s;
+  }
+  .resizer:hover::after,
+  aside.dragging .resizer::after {
+    background: var(--accent);
+  }
+  aside.dragging {
+    user-select: none;
   }
   .wbal {
     font-size: 12.5px;
