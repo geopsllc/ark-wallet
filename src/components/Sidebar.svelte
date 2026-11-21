@@ -1,6 +1,6 @@
 <script lang="ts">
   import Icon from "./Icon.svelte";
-  import WalletAvatar from "./WalletAvatar.svelte";
+  import WalletName from "./WalletName.svelte";
   import Address from "./Address.svelte";
   import { walletColor } from "../lib/colors";
   import { app } from "../lib/state.svelte";
@@ -73,13 +73,12 @@
       {@const d = app.data[w.address]}
       <button
         class="wallet"
-        style="--wc:{walletColor(w.address)}"
+        style="--wc:{walletColor(w)}"
         class:active={app.view.name === "wallet" && app.view.id === w.id}
         onclick={() => (app.view = { name: "wallet", id: w.id })}
       >
         <div class="row" style="gap:8px">
-          <WalletAvatar name={w.name} address={w.address} size={22} />
-          <span class="wname ellipsis">{w.name}</span>
+          <span class="wname"><WalletName wallet={w} size="sm" /></span>
           {#if w.network !== "mainnet"}<span class="badge warn">{NETWORKS[w.network].name}</span>{/if}
           <span class="spacer"></span>
           {#if app.loading[w.address] && !d}<span class="spinner" style="width:10px;height:10px"></span>{/if}
@@ -225,7 +224,7 @@
     color: var(--faint);
   }
   .wname {
-    font-weight: 500;
+    display: flex;
     min-width: 0;
     flex-shrink: 1;
   }

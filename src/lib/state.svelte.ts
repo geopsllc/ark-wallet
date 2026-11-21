@@ -2,6 +2,7 @@ import { backend } from "./backend";
 import { ark } from "./ark";
 import { fetchHistory, fetchPrice, type PriceInfo } from "./price";
 import { describeTx, involves, type TxRow } from "./txinfo";
+import { pickColor } from "./colors";
 import {
   DEFAULT_SETTINGS,
   NETWORKS,
@@ -82,6 +83,15 @@ class AppState {
       if (s && s.wallets) {
         this.wallets = s.wallets;
         this.settings = { ...DEFAULT_SETTINGS, ...s.settings, apiUrls: { ...(s.settings?.apiUrls ?? {}) } };
+        // give older wallets distinct colors once
+        let assigned = false;
+        for (const w of this.wallets) {
+          if (!w.color) {
+            w.color = pickColor(this.wallets.map((x) => x.color));
+            assigned = true;
+          }
+        }
+        if (assigned) this.persist();
       }
     } catch (e) {
       this.toast("error", `Could not load saved data: ${e}`);
@@ -189,6 +199,7 @@ class AppState {
       ...entry,
       name: auto ? `Wallet ${this.wallets.length + 1}` : entry.name.trim(),
       autoName: auto,
+      color: pickColor(this.wallets.map((x) => x.color)),
       id: crypto.randomUUID(),
       addedAt: Date.now(),
     });

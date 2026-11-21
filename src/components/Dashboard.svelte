@@ -2,7 +2,7 @@
   import Icon from "./Icon.svelte";
   import PriceChart from "./PriceChart.svelte";
   import DelegateName from "./DelegateName.svelte";
-  import WalletAvatar from "./WalletAvatar.svelte";
+  import WalletName from "./WalletName.svelte";
   import Address from "./Address.svelte";
   import { walletColor } from "../lib/colors";
   import { app } from "../lib/state.svelte";
@@ -90,10 +90,9 @@
       {#each app.wallets as w (w.id)}
         {@const d = app.data[w.address]}
         {@const f = app.fiatValue(w.network, d?.balance)}
-        <button class="card wcard" style="--wc:{walletColor(w.address)}" onclick={() => (app.view = { name: "wallet", id: w.id })}>
+        <button class="card wcard" style="--wc:{walletColor(w)}" onclick={() => (app.view = { name: "wallet", id: w.id })}>
           <div class="row">
-            <WalletAvatar name={w.name} address={w.address} size={26} />
-            <span class="wn ellipsis">{w.name}</span>
+            <span class="wn"><WalletName wallet={w} /></span>
             {#if w.network !== "mainnet"}<span class="badge warn">{NETWORKS[w.network].name}</span>{/if}
             {#if d?.delegate}<span class="badge brand">Delegate</span>{/if}
           </div>
@@ -205,7 +204,8 @@
     background: var(--card-hover);
   }
   .wn {
-    font-weight: 600;
+    display: flex;
+    min-width: 0;
   }
   .tok {
     color: var(--accent);

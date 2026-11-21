@@ -47,6 +47,8 @@ export interface WalletEntry {
   addedAt: number;
   /** Name was not chosen by the user: replace it with the delegate username when there is one */
   autoName?: boolean;
+  /** Identity color (assigned when added, least-used palette color) */
+  color?: string;
 }
 
 export type FeeChoice = "min" | "avg";

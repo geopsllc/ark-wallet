@@ -8,7 +8,7 @@
   import MessageTools from "./MessageTools.svelte";
   import AdvancedPanel from "./AdvancedPanel.svelte";
   import Modal from "./Modal.svelte";
-  import WalletAvatar from "./WalletAvatar.svelte";
+  import WalletName from "./WalletName.svelte";
   import { app } from "../lib/state.svelte";
   import { openExternal } from "../lib/backend";
   import { formatArk, formatFiat } from "../lib/format";
@@ -70,8 +70,7 @@
           autofocus
         />
       {:else}
-        <WalletAvatar name={wallet.name} address={wallet.address} size={32} />
-        <h1 class="ellipsis">{wallet.name}</h1>
+        <h1 class="hname"><WalletName {wallet} size="lg" /></h1>
         <button class="btn ghost icon" title="Rename" onclick={startEdit}><Icon name="edit" size={14} /></button>
       {/if}
       <span class="badge" class:brand={wallet.network === "mainnet"} class:warn={wallet.network !== "mainnet"}>{net.name}</span>
@@ -161,7 +160,11 @@
     background: linear-gradient(170deg, rgba(115, 191, 255, 0.08), var(--card) 55%);
   }
   .head h1 {
-    max-width: 380px;
+    max-width: 420px;
+  }
+  .hname {
+    display: flex;
+    min-width: 0;
   }
   .name-input {
     width: 320px;
