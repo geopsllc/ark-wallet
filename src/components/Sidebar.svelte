@@ -80,9 +80,14 @@
           {#if app.loading[w.address] && !d}<span class="spinner" style="width:10px;height:10px"></span>{/if}
           {#if app.errors[w.address]}<span class="red" title={app.errors[w.address]}>!</span>{/if}
         </div>
-        <div class="wbal num">
-          {d ? formatArk(d.balance, 2, 2) : "…"} <span class="faint">{NETWORKS[w.network].token}</span>
+        <div class="row" style="gap:6px">
+          <div class="wbal num">
+            {d ? formatArk(d.balance, 2, 2) : "…"} <span class="faint">{NETWORKS[w.network].token}</span>
+          </div>
+          <span class="spacer"></span>
+          <span class="chev"><Icon name="chevron" size={14} /></span>
         </div>
+        <div class="waddr mono ellipsis">{w.address}</div>
       </button>
     {:else}
       <div class="empty faint small">No wallets yet</div>
@@ -165,25 +170,52 @@
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 7px;
     min-height: 0;
+    padding: 2px 2px 6px;
   }
   .wallet {
-    background: none;
-    border: 1px solid transparent;
-    border-radius: 9px;
-    padding: 8px 10px;
+    background: var(--card);
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
+    padding: 9px 10px 9px 12px;
     text-align: left;
     display: flex;
     flex-direction: column;
-    gap: 1px;
+    gap: 2px;
+    flex-shrink: 0;
+    transition:
+      border-color 0.12s,
+      background 0.12s,
+      transform 0.06s;
   }
   .wallet:hover {
-    background: rgba(255, 255, 255, 0.04);
+    background: var(--card-hover);
+    border-color: rgba(115, 191, 255, 0.35);
+  }
+  .wallet:active {
+    transform: translateY(1px);
   }
   .wallet.active {
-    background: var(--card);
-    border-color: rgba(115, 191, 255, 0.45);
+    background: var(--card-hover);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px rgba(115, 191, 255, 0.25);
+  }
+  .chev {
+    display: inline-flex;
+    color: var(--faint);
+    transition:
+      color 0.12s,
+      transform 0.12s;
+  }
+  .wallet:hover .chev,
+  .wallet.active .chev {
+    color: var(--accent);
+    transform: translateX(2px);
+  }
+  .waddr {
+    font-size: 11px;
+    color: var(--faint);
   }
   .wname {
     font-weight: 500;
