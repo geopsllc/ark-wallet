@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Pager from "./Pager.svelte";
   import PartyName from "./PartyName.svelte";
   import Sym from "./Sym.svelte";
   import Icon from "./Icon.svelte";
@@ -66,7 +67,7 @@
 </script>
 
 <div class="stack">
-  <div class="row">
+  <div class="row" style="flex-wrap:wrap; row-gap:8px">
     <div class="seg">
       <button class:on={filter === "all"} onclick={() => setFilter("all")}>All</button>
       <button class:on={filter === "received"} onclick={() => setFilter("received")}>Received</button>
@@ -75,9 +76,7 @@
     <span class="faint small num">{total.toLocaleString()} transactions</span>
     <span class="spacer"></span>
     {#if loading}<span class="spinner"></span>{/if}
-    <button class="btn small" disabled={page <= 1} onclick={() => page--}>Prev</button>
-    <span class="muted small num">Page {page} / {pageCount.toLocaleString()}</span>
-    <button class="btn small" disabled={page >= pageCount} onclick={() => page++}>Next</button>
+    <Pager bind:page {pageCount} />
   </div>
 
   {#if error}
@@ -164,9 +163,15 @@
       </tbody>
     </table>
   </div>
+  {#if pageCount > 1 && txs.length}
+    <div class="row bottom-pager"><span class="spacer"></span><Pager bind:page {pageCount} /></div>
+  {/if}
 </div>
 
 <style>
+  .bottom-pager {
+    margin-top: -4px;
+  }
   .txid {
     white-space: nowrap;
     display: inline-flex;
@@ -178,8 +183,14 @@
   .memo {
     font-size: 12.5px;
   }
+  /* Fixed columns: Tx ID 150 + Amount 178 + Date 104 = 432px. Memo takes 24%; the Transaction column
+     gets the rest and needs ~260px for "Multipayment received" and a full from/to line. Columns hide
+     (memo, then date, then tx id) exactly when keeping them would squeeze the Transaction column below that. */
   .c-id {
-    width: 132px;
+    width: 150px;
+  }
+  .c-memo {
+    width: 24%;
   }
   .c-amt {
     width: 178px;
@@ -187,18 +198,17 @@
   .c-date {
     width: 104px;
   }
-  /* narrow: drop whole columns (memo first, then date, then tx id) rather than squeezing or clipping them */
-  @container (max-width: 760px) {
+  @container (max-width: 910px) {
     .c-memo {
       display: none;
     }
   }
-  @container (max-width: 580px) {
+  @container (max-width: 700px) {
     .c-date {
       display: none;
     }
   }
-  @container (max-width: 450px) {
+  @container (max-width: 596px) {
     .c-id {
       display: none;
     }

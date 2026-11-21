@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Pager from "./Pager.svelte";
   import Sym from "./Sym.svelte";
   import ConfirmTx from "./ConfirmTx.svelte";
   import Icon from "./Icon.svelte";
@@ -139,16 +140,14 @@
     {/if}
   </div>
 
-  <div class="row">
+  <div class="row" style="flex-wrap:wrap; row-gap:8px">
     <div class="search">
       <Icon name="search" size={14} />
       <input bind:value={search} oninput={onSearch} placeholder="Search delegates" spellcheck="false" />
     </div>
     <span class="spacer"></span>
     {#if loading}<span class="spinner"></span>{/if}
-    <button class="btn small" disabled={page <= 1} onclick={() => page--}>Prev</button>
-    <span class="muted small num">Page {page} / {pageCount}</span>
-    <button class="btn small" disabled={page >= pageCount} onclick={() => page++}>Next</button>
+    <Pager bind:page {pageCount} />
   </div>
 
   {#if error}<div class="notice error">{error}</div>{/if}

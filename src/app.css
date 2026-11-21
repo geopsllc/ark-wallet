@@ -124,6 +124,19 @@ a:hover {
   gap: 3px;
   border-radius: 3px;
 }
+.xlink {
+  max-width: 100%;
+  min-width: 0;
+}
+.xlink > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.xlink > svg {
+  flex-shrink: 0;
+}
 .xlink:hover {
   text-decoration: underline;
   text-underline-offset: 2px;
