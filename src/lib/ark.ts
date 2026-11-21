@@ -1,4 +1,5 @@
 import { backend } from "./backend";
+import { withRetry } from "./retry";
 import type { ApiTransaction, Delegate, WalletData } from "./types";
 
 export class ApiError extends Error {
@@ -30,8 +31,17 @@ function trimBase(base: string) {
   return base.replace(/\/+$/, "");
 }
 
-async function get(base: string, path: string): Promise<any> {
-  const res = await backend.httpGet(trimBase(base) + path);
+function get(base: string, path: string): Promise<any> {
+  return withRetry(() => getOnce(base, path));
+}
+
+async function getOnce(base: string, path: string): Promise<any> {
+  let res;
+  try {
+    res = await backend.httpGet(trimBase(base) + path);
+  } catch (e: any) {
+    throw new ApiError(String(e?.message ?? e)); // network error: no status, retried
+  }
   if (res.status === 404) throw new ApiError("Not found", 404);
   if (res.status < 200 || res.status >= 300) {
     const msg = typeof res.body === "object" ? res.body?.message || res.body?.error : String(res.body).slice(0, 120);
@@ -154,6 +164,23 @@ export const ark = {
     };
     feeCache.set(base, { at: Date.now(), value });
     return value;
+  },
+
+  /** Newest blocks, highest first: [{ id, height, transactions }] */
+  async latestBlocks(base: string, limit = 20): Promise<{ id: string; height: number; transactions: number }[]> {
+    const body = await get(base, `/blocks?limit=${limit}&orderBy=height:desc`);
+    return (body.data as any[]).map((b) => ({ id: b.id, height: b.height, transactions: b.transactions ?? 0 }));
+  },
+
+  /** All transactions in a block (a block holds at most 150). */
+  async blockTransactions(base: string, blockId: string): Promise<ApiTransaction[]> {
+    const out: ApiTransaction[] = [];
+    for (let page = 1; page <= 3; page++) {
+      const body = await get(base, `/blocks/${blockId}/transactions?limit=100&page=${page}`);
+      out.push(...body.data);
+      if (!body.meta?.next) break;
+    }
+    return out;
   },
 
   /** Check a custom API URL: returns nethash + pubKeyHash + height. */

@@ -109,8 +109,12 @@
     </div>
     <div class="line">
       <div>
-        <div>Refresh wallets every</div>
-        <div class="muted small">Balances, votes and transactions</div>
+        <div>Full refresh every</div>
+        <div class="muted small">
+          New blocks are checked every 8 s and wallets update as soon as a transaction touches them; this is an extra
+          safety refresh of everything.
+          {#if app.height.mainnet}<br />Mainnet block <span class="num">{app.height.mainnet.toLocaleString()}</span>{/if}
+        </div>
       </div>
       <select value={String(app.settings.refreshSeconds)} onchange={setRefresh} style="width:140px">
         <option value="30">30 seconds</option>

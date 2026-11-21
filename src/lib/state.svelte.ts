@@ -1,6 +1,7 @@
 import { backend } from "./backend";
 import { ark } from "./ark";
 import { fetchHistory, fetchPrice, type PriceInfo } from "./price";
+import { describeTx, involves, type TxRow } from "./txinfo";
 import {
   DEFAULT_SETTINGS,
   NETWORKS,
@@ -8,11 +9,25 @@ import {
   type NetworkId,
   type PersistedState,
   type Settings,
+  type ApiTransaction,
   type WalletData,
   type WalletEntry,
 } from "./types";
 
 export type View = { name: "dashboard" } | { name: "wallet"; id: string } | { name: "settings" };
+
+/** A confirmed on-chain transaction touching one of the user's wallets, shown as an overlay card. */
+export interface TxEvent {
+  key: string;
+  walletId: string;
+  network: NetworkId;
+  tx: ApiTransaction;
+  row: TxRow;
+  at: number;
+}
+
+/** New blocks are checked this often (ARK block time is 8 s). */
+const BLOCK_POLL_MS = 8000;
 
 interface Toast {
   id: number;
@@ -38,6 +53,11 @@ class AppState {
   history = $state<[number, number][]>([]);
 
   toasts = $state<Toast[]>([]);
+  events = $state<TxEvent[]>([]);
+  height = $state<Partial<Record<NetworkId, number>>>({});
+  private lastHeight: Partial<Record<NetworkId, number>> = {};
+  private watching: Partial<Record<NetworkId, boolean>> = {};
+  private watchTimer: ReturnType<typeof setInterval> | null = null;
   private toastSeq = 0;
   private timer: ReturnType<typeof setInterval> | null = null;
 
@@ -70,11 +90,72 @@ class AppState {
     this.refreshAll();
     this.refreshPrice();
     this.restartTimer();
+    this.startWatcher();
+  }
+
+  // ---------- live block watcher ----------
+
+  startWatcher() {
+    if (this.watchTimer) clearInterval(this.watchTimer);
+    const tick = () => {
+      const nets = new Set(this.wallets.map((w) => w.network));
+      for (const n of nets) this.watchNetwork(n);
+    };
+    tick();
+    this.watchTimer = setInterval(tick, BLOCK_POLL_MS);
+  }
+
+  private async watchNetwork(net: NetworkId) {
+    if (this.watching[net]) return;
+    this.watching[net] = true;
+    try {
+      const base = this.apiUrl(net);
+      const blocks = await ark.latestBlocks(base, 20);
+      if (!blocks.length) return;
+      const newest = blocks[0].height;
+      const prev = this.lastHeight[net];
+      this.height[net] = newest;
+      if (prev === undefined || newest <= prev) {
+        this.lastHeight[net] ??= newest;
+        return;
+      }
+      const mine = this.wallets.filter((w) => w.network === net);
+      if (newest - prev > blocks.length) {
+        // we were asleep / offline for a while: just reload everything quietly
+        mine.forEach((w) => this.refreshWallet(w));
+        this.lastHeight[net] = newest;
+        return;
+      }
+      const touched = new Set<string>();
+      for (const b of blocks.filter((b) => b.height > prev && b.transactions > 0).reverse()) {
+        const txs = await ark.blockTransactions(base, b.id);
+        for (const tx of txs) {
+          for (const w of mine) {
+            if (!involves(tx, w.address)) continue;
+            touched.add(w.id);
+            const key = `${tx.id}:${w.id}`;
+            if (!this.events.some((e) => e.key === key)) {
+              this.events.push({ key, walletId: w.id, network: net, tx, row: describeTx(tx, w.address), at: Date.now() });
+            }
+          }
+        }
+      }
+      this.lastHeight[net] = newest;
+      for (const w of mine) if (touched.has(w.id)) this.refreshWallet(w);
+    } catch {
+      // transient errors are already retried in ark.*; try again next block
+    } finally {
+      this.watching[net] = false;
+    }
+  }
+
+  dismissEvent(key: string) {
+    this.events = this.events.filter((e) => e.key !== key);
   }
 
   restartTimer() {
     if (this.timer) clearInterval(this.timer);
-    const secs = Math.max(15, this.settings.refreshSeconds || 60);
+    const secs = Math.max(10, this.settings.refreshSeconds || 60);
     let tick = 0;
     this.timer = setInterval(() => {
       tick++;
@@ -234,6 +315,7 @@ class AppState {
     else delete this.settings.apiUrls[network];
     this.persist();
     this.data = {};
+    delete this.lastHeight[network];
     this.refreshAll();
   }
 

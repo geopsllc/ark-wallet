@@ -6,6 +6,7 @@
   import { openExternal } from "../lib/backend";
   import { formatArk, formatDate, shortAddress, timeAgo } from "../lib/format";
   import { NETWORKS, type ApiTransaction, type WalletEntry } from "../lib/types";
+  import { describeTx } from "../lib/txinfo";
 
   let { wallet }: { wallet: WalletEntry } = $props();
   const net = $derived(NETWORKS[wallet.network]);
@@ -21,17 +22,9 @@
   async function load() {
     loading = true;
     error = "";
-    const fetchPage = () => ark.transactions(app.apiUrl(wallet.network), wallet.address, page, filter);
     try {
-      let r;
-      try {
-        r = await fetchPage();
-      } catch (e: any) {
-        // public nodes hiccup now and then (5xx / timeouts): retry once before showing an error
-        if (e?.status && e.status < 500) throw e;
-        await new Promise((res) => setTimeout(res, 1200));
-        r = await fetchPage();
-      }
+      // transient API failures are retried automatically inside ark.* (see lib/retry.ts)
+      const r = await ark.transactions(app.apiUrl(wallet.network), wallet.address, page, filter);
       txs = r.data;
       pageCount = Math.max(1, r.pageCount);
       total = r.totalCount;
@@ -60,60 +53,7 @@
     page = 1;
   }
 
-  interface Row {
-    label: string;
-    icon: string;
-    dir: "in" | "out" | "self" | "other";
-    amount: bigint; // signed, excluding fee
-    counterparty?: string;
-    votes?: string[];
-  }
-
-  function describe(t: ApiTransaction): Row {
-    const me = wallet.address;
-    const out = t.sender === me;
-    const amt = BigInt(t.amount ?? "0");
-    if (t.typeGroup === 1) {
-      switch (t.type) {
-        case 0: {
-          if (out && t.recipient === me) return { label: "Transfer to self", icon: "swap", dir: "self", amount: 0n, counterparty: me };
-          return out
-            ? { label: "Sent", icon: "send", dir: "out", amount: -amt, counterparty: t.recipient }
-            : { label: "Received", icon: "receive", dir: "in", amount: amt, counterparty: t.sender };
-        }
-        case 6: {
-          const payments: { amount: string; recipientId: string }[] = t.asset?.payments ?? [];
-          if (out) {
-            const sum = payments.reduce((s, p) => s + BigInt(p.amount), 0n);
-            const toSelf = payments.filter((p) => p.recipientId === me).reduce((s, p) => s + BigInt(p.amount), 0n);
-            return { label: `Multipayment (${payments.length})`, icon: "users", dir: "out", amount: -(sum - toSelf) };
-          }
-          const mine = payments.filter((p) => p.recipientId === me).reduce((s, p) => s + BigInt(p.amount), 0n);
-          return { label: "Multipayment received", icon: "receive", dir: "in", amount: mine, counterparty: t.sender };
-        }
-        case 3: {
-          const votes: string[] = t.asset?.votes ?? [];
-          const label = votes.length === 2 ? "Switch vote" : votes[0]?.startsWith("+") ? "Vote" : "Unvote";
-          return { label, icon: "vote", dir: "other", amount: 0n, votes };
-        }
-        case 1:
-          return { label: "Second passphrase", icon: "key", dir: "other", amount: 0n };
-        case 2:
-          return { label: `Delegate registration: ${t.asset?.delegate?.username ?? ""}`, icon: "star", dir: "other", amount: 0n };
-        case 7:
-          return { label: "Delegate resignation", icon: "x", dir: "other", amount: 0n };
-        case 4:
-          return { label: "Multisignature", icon: "users", dir: "other", amount: 0n };
-        case 5:
-          return { label: "IPFS", icon: "layers", dir: "other", amount: 0n };
-        case 8:
-        case 9:
-        case 10:
-          return { label: ["HTLC lock", "HTLC claim", "HTLC refund"][t.type - 8], icon: "lock", dir: out ? "out" : "in", amount: out ? -amt : amt };
-      }
-    }
-    return { label: `Type ${t.typeGroup}/${t.type}`, icon: "layers", dir: "other", amount: out ? -amt : amt };
-  }
+  const describe = (t: ApiTransaction) => describeTx(t, wallet.address);
 
   function partyName(addr?: string) {
     if (!addr) return "";

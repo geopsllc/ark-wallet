@@ -5,6 +5,7 @@
   import SettingsView from "./components/SettingsView.svelte";
   import AddWallet from "./components/AddWallet.svelte";
   import Toasts from "./components/Toasts.svelte";
+  import TxOverlay from "./components/TxOverlay.svelte";
   import { app } from "./lib/state.svelte";
 
   let adding = $state(false);
@@ -35,6 +36,7 @@
 
 {#if adding}<AddWallet onclose={() => (adding = false)} />{/if}
 <Toasts />
+<TxOverlay />
 
 <style>
   .shell {

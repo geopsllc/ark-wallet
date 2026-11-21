@@ -1,4 +1,13 @@
 import { backend } from "./backend";
+import { withRetry } from "./retry";
+
+async function cg(url: string): Promise<any> {
+  return withRetry(async () => {
+    const res = await backend.httpGet(url);
+    if (res.status !== 200) throw Object.assign(new Error(`CoinGecko returned ${res.status}`), { status: res.status });
+    return res.body;
+  });
+}
 
 const CG = "https://api.coingecko.com/api/v3";
 
@@ -15,9 +24,7 @@ export interface PriceInfo {
 
 export async function fetchPrice(currency: string): Promise<PriceInfo> {
   const url = `${CG}/simple/price?ids=ark&vs_currencies=${currency}&include_24hr_change=true&include_market_cap=true&include_24hr_vol=true`;
-  const res = await backend.httpGet(url);
-  if (res.status !== 200) throw new Error(`CoinGecko returned ${res.status}`);
-  const d = res.body?.ark ?? {};
+  const d = (await cg(url))?.ark ?? {};
   return {
     price: d[currency] ?? 0,
     change24h: d[`${currency}_24h_change`] ?? 0,
@@ -30,7 +37,5 @@ export async function fetchPrice(currency: string): Promise<PriceInfo> {
 
 /** [unixMs, price][] for the last `days` days */
 export async function fetchHistory(currency: string, days = 7): Promise<[number, number][]> {
-  const res = await backend.httpGet(`${CG}/coins/ark/market_chart?vs_currency=${currency}&days=${days}`);
-  if (res.status !== 200) throw new Error(`CoinGecko returned ${res.status}`);
-  return res.body?.prices ?? [];
+  return (await cg(`${CG}/coins/ark/market_chart?vs_currency=${currency}&days=${days}`))?.prices ?? [];
 }
