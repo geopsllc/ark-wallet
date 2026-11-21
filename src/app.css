@@ -407,6 +407,24 @@ input[type="checkbox"] {
 table.list {
   width: 100%;
   border-collapse: collapse;
+  /* columns keep their set widths; content truncates instead of pushing the table wider */
+  table-layout: fixed;
+}
+/* every line in a cell stays one line, so a row is never taller than its stacked lines (max 2) */
+table.list th,
+table.list td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+table.list td > div,
+table.list td div[style*="min-width"] > div {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* tables hide whole columns as their container narrows (see .tcol-* rules) instead of clipping them */
+.tablebox {
+  container-type: inline-size;
 }
 table.list th {
   text-align: left;

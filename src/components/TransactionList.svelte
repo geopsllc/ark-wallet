@@ -88,15 +88,15 @@
     </div>
   {/if}
 
-  <div class="panel" style="overflow:hidden">
+  <div class="panel tablebox" style="overflow:hidden">
     <table class="list">
       <thead>
         <tr>
-          <th style="width:34%">Transaction</th>
-          <th style="width:140px">Tx ID</th>
-          <th>Memo</th>
-          <th class="right">Amount</th>
-          <th class="right" style="width:120px">Date</th>
+          <th>Transaction</th>
+          <th class="c-id">Tx ID</th>
+          <th class="c-memo">Memo</th>
+          <th class="right c-amt">Amount</th>
+          <th class="right c-date">Date</th>
         </tr>
       </thead>
       <tbody>
@@ -126,15 +126,15 @@
                 </div>
               </div>
             </td>
-            <td>
+            <td class="c-id">
               <button
                 class="xlink mono txid"
                 title="{t.id} · open in explorer"
                 onclick={() => openExternal(app.explorerTx(wallet.network, t.id))}
               >{shortAddress(t.id, 6)}<Icon name="external" size={11} /></button>
             </td>
-            <td class="memo muted ellipsis" title={t.vendorField ?? ""}>{t.vendorField ?? ""}</td>
-            <td class="right num">
+            <td class="c-memo memo muted" title={t.vendorField ?? ""}>{t.vendorField ?? ""}</td>
+            <td class="right num c-amt">
               {#if r.amount !== 0n}
                 <div class:green={r.amount > 0n} class:red={r.amount < 0n} style="font-weight:500">
                   {r.amount > 0n ? "+" : "−"}{formatArk(r.amount < 0n ? -r.amount : r.amount)}<Sym network={wallet.network} />
@@ -144,7 +144,7 @@
                 fee {formatArk(t.fee, 8, 0)}<Sym network={wallet.network} />{t.sender === wallet.address ? "" : " (sender)"}
               </div>
             </td>
-            <td class="right">
+            <td class="right c-date">
               {#if t.timestamp}
                 {@const when = new Date(t.timestamp.unix * 1000)}
                 <div class="small" title={formatDate(t.timestamp.unix)}>{timeAgo(t.timestamp.unix)}</div>
@@ -176,8 +176,32 @@
     color: var(--accent);
   }
   .memo {
-    max-width: 220px;
     font-size: 12.5px;
+  }
+  .c-id {
+    width: 132px;
+  }
+  .c-amt {
+    width: 178px;
+  }
+  .c-date {
+    width: 104px;
+  }
+  /* narrow: drop whole columns (memo first, then date, then tx id) rather than squeezing or clipping them */
+  @container (max-width: 760px) {
+    .c-memo {
+      display: none;
+    }
+  }
+  @container (max-width: 580px) {
+    .c-date {
+      display: none;
+    }
+  }
+  @container (max-width: 450px) {
+    .c-id {
+      display: none;
+    }
   }
   .ticon {
     width: 32px;

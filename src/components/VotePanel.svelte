@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Sym from "./Sym.svelte";
   import ConfirmTx from "./ConfirmTx.svelte";
   import Icon from "./Icon.svelte";
   import { app } from "../lib/state.svelte";
@@ -152,15 +153,15 @@
 
   {#if error}<div class="notice error">{error}</div>{/if}
 
-  <div class="panel tablewrap">
+  <div class="panel tablewrap tablebox">
     <table class="list">
       <thead>
-        <tr><th style="width:56px">Rank</th><th>Delegate</th><th class="right">Votes</th><th class="right">Approval</th><th class="right" style="width:130px"></th></tr>
+        <tr><th class="c-rank">Rank</th><th>Delegate</th><th class="right c-votes">Votes</th><th class="right c-appr">Approval</th><th class="right c-act"></th></tr>
       </thead>
       <tbody>
         {#each list as d (d.publicKey)}
           <tr class:mine={d.publicKey === votedKey}>
-            <td class="num" class:faint={d.rank > 51}>{d.rank}</td>
+            <td class="num c-rank" class:faint={d.rank > 51}>{d.rank}</td>
             <td>
               <div class="row">
                 <span style="font-weight:500">{d.username}</span>
@@ -169,9 +170,9 @@
               </div>
               <div class="faint small mono">{shortAddress(d.address, 8)}</div>
             </td>
-            <td class="right num">{formatArk(d.votes, 0, 0)}</td>
-            <td class="right num muted">{pct(d)}</td>
-            <td class="right">
+            <td class="right num c-votes">{formatArk(d.votes, 0, 0)}<Sym network={wallet.network} /></td>
+            <td class="right num muted c-appr">{pct(d)}</td>
+            <td class="right c-act">
               {#if d.publicKey === votedKey}
                 <button class="btn small danger" onclick={unvote}>Unvote</button>
               {:else if votedKey}
@@ -194,6 +195,28 @@
 {/if}
 
 <style>
+  .c-rank {
+    width: 70px;
+  }
+  .c-votes {
+    width: 150px;
+  }
+  .c-appr {
+    width: 92px;
+  }
+  .c-act {
+    width: 112px;
+  }
+  @container (max-width: 560px) {
+    .c-appr {
+      display: none;
+    }
+  }
+  @container (max-width: 430px) {
+    .c-votes {
+      display: none;
+    }
+  }
   .current {
     padding: 16px 18px;
   }
