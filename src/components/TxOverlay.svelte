@@ -1,4 +1,5 @@
 <script lang="ts">
+  import PartyName from "./PartyName.svelte";
   import Sym from "./Sym.svelte";
   import { fly } from "svelte/transition";
   import { flip } from "svelte/animate";
@@ -30,11 +31,6 @@
 
   function walletName(e: TxEvent) {
     return app.wallet(e.walletId)?.name ?? shortAddress(e.tx.sender, 6);
-  }
-  function partyName(addr?: string) {
-    if (!addr) return "";
-    const w = app.wallets.find((x) => x.address === addr);
-    return w ? w.name : shortAddress(addr, 6);
   }
   function headline(e: TxEvent) {
     const a = e.row.amount;
@@ -77,7 +73,7 @@
             ·
             {#each e.row.votes as v, i}{i > 0 ? " → " : ""}{v[0] === "+" ? "for " : "from "}<DelegateName network={e.network} publicKey={v.slice(1)} />{/each}
           {:else if e.row.counterparty}
-            · {e.row.dir === "in" ? "from" : "to"} <span class="mono">{partyName(e.row.counterparty)}</span>
+            · {e.row.dir === "in" ? "from" : "to"} <PartyName network={e.network} address={e.row.counterparty} chars={6} />
           {/if}
         </div>
         {#if e.tx.vendorField}<div class="memo small ellipsis">“{e.tx.vendorField}”</div>{/if}

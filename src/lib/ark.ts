@@ -64,6 +64,8 @@ function mapDelegate(d: any): Delegate {
 }
 
 const feeCache = new Map<string, { at: number; value: NodeFeeConfig }>();
+/** address -> registered delegate username (or null), per API base; holds the in-flight promise to dedupe */
+const nameCache = new Map<string, Promise<string | null>>();
 const delegateCache = new Map<string, Delegate>();
 
 export const ark = {
@@ -139,6 +141,23 @@ export const ark = {
     const d = mapDelegate(data);
     delegateCache.set(key, d);
     return d;
+  },
+
+  /** Known on-chain name for an address: its registered delegate username, if any. Cached. */
+  addressName(base: string, address: string): Promise<string | null> {
+    const key = base + address;
+    let p = nameCache.get(key);
+    if (!p) {
+      p = get(base, `/wallets/${address}`)
+        .then(({ data }) => (data?.attributes?.delegate?.username as string | undefined) ?? null)
+        .catch((e) => {
+          if (e instanceof ApiError && e.status === 404) return null;
+          nameCache.delete(key); // transient failure: allow a later retry
+          return null;
+        });
+      nameCache.set(key, p);
+    }
+    return p;
   },
 
   async fees(base: string, force = false): Promise<NodeFeeConfig> {

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import PartyName from "./PartyName.svelte";
   import Sym from "./Sym.svelte";
   import Icon from "./Icon.svelte";
   import DelegateName from "./DelegateName.svelte";
@@ -56,11 +57,6 @@
 
   const describe = (t: ApiTransaction) => describeTx(t, wallet.address);
 
-  function partyName(addr?: string) {
-    if (!addr) return "";
-    const w = app.wallets.find((x) => x.address === addr);
-    return w ? w.name : shortAddress(addr, 7);
-  }
 </script>
 
 <div class="stack">
@@ -114,7 +110,7 @@
                         {i > 0 ? " → " : ""}{v[0] === "+" ? "for " : "from "}<DelegateName network={wallet.network} publicKey={v.slice(1)} />
                       {/each}
                     {:else if r.counterparty}
-                      {r.dir === "in" ? "from" : "to"} <span class="mono">{partyName(r.counterparty)}</span>
+                      {r.dir === "in" ? "from" : "to"} <PartyName network={wallet.network} address={r.counterparty} />
                     {:else}
                       <span class="mono">{shortAddress(t.id, 8)}</span>
                     {/if}
