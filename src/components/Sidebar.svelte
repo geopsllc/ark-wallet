@@ -1,5 +1,7 @@
 <script lang="ts">
   import Icon from "./Icon.svelte";
+  import WalletAvatar from "./WalletAvatar.svelte";
+  import { walletColor } from "../lib/colors";
   import { app } from "../lib/state.svelte";
   import { formatArk, formatFiat } from "../lib/format";
   import { NETWORKS } from "../lib/types";
@@ -70,10 +72,12 @@
       {@const d = app.data[w.address]}
       <button
         class="wallet"
+        style="--wc:{walletColor(w.address)}"
         class:active={app.view.name === "wallet" && app.view.id === w.id}
         onclick={() => (app.view = { name: "wallet", id: w.id })}
       >
-        <div class="row" style="gap:6px">
+        <div class="row" style="gap:8px">
+          <WalletAvatar name={w.name} address={w.address} size={22} />
           <span class="wname ellipsis">{w.name}</span>
           {#if w.network !== "mainnet"}<span class="badge warn">{NETWORKS[w.network].name}</span>{/if}
           <span class="spacer"></span>
@@ -82,7 +86,7 @@
         </div>
         <div class="row" style="gap:6px">
           <div class="wbal num">
-            {d ? formatArk(d.balance, 2, 2) : "…"} <span class="faint">{NETWORKS[w.network].token}</span>
+            {d ? formatArk(d.balance, 2, 2) : "…"} <span class="tok">{NETWORKS[w.network].token}</span>
           </div>
           <span class="spacer"></span>
           <span class="chev"><Icon name="chevron" size={14} /></span>
@@ -175,8 +179,9 @@
     padding: 2px 2px 6px;
   }
   .wallet {
-    background: var(--card);
+    background: linear-gradient(100deg, color-mix(in srgb, var(--wc) 9%, var(--card)), var(--card) 55%);
     border: 1px solid var(--border-strong);
+    border-left: 3px solid var(--wc);
     border-radius: 10px;
     padding: 9px 10px 9px 12px;
     text-align: left;
@@ -197,8 +202,9 @@
     transform: translateY(1px);
   }
   .wallet.active {
-    background: var(--card-hover);
+    background: linear-gradient(100deg, color-mix(in srgb, var(--wc) 15%, var(--card-hover)), var(--card-hover) 60%);
     border-color: var(--accent);
+    border-left-color: var(--wc);
     box-shadow: 0 0 0 1px rgba(115, 191, 255, 0.25);
   }
   .chev {
@@ -249,11 +255,14 @@
     user-select: none;
   }
   .wbal {
-    font-size: 12.5px;
-    color: var(--muted);
-  }
-  .wallet.active .wbal {
+    font-size: 13px;
+    font-weight: 600;
     color: var(--text);
+  }
+  .tok {
+    color: var(--accent);
+    font-weight: 500;
+    font-size: 11.5px;
   }
   .empty {
     padding: 8px 10px;

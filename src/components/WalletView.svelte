@@ -8,6 +8,7 @@
   import MessageTools from "./MessageTools.svelte";
   import AdvancedPanel from "./AdvancedPanel.svelte";
   import Modal from "./Modal.svelte";
+  import WalletAvatar from "./WalletAvatar.svelte";
   import { app } from "../lib/state.svelte";
   import { openExternal } from "../lib/backend";
   import { formatArk, formatFiat } from "../lib/format";
@@ -69,6 +70,7 @@
           autofocus
         />
       {:else}
+        <WalletAvatar name={wallet.name} address={wallet.address} size={32} />
         <h1 class="ellipsis">{wallet.name}</h1>
         <button class="btn ghost icon" title="Rename" onclick={startEdit}><Icon name="edit" size={14} /></button>
       {/if}

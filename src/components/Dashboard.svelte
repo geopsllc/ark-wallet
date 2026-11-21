@@ -2,6 +2,8 @@
   import Icon from "./Icon.svelte";
   import PriceChart from "./PriceChart.svelte";
   import DelegateName from "./DelegateName.svelte";
+  import WalletAvatar from "./WalletAvatar.svelte";
+  import { walletColor } from "../lib/colors";
   import { app } from "../lib/state.svelte";
   import { formatArk, formatFiat, shortAddress } from "../lib/format";
   import { NETWORKS } from "../lib/types";
@@ -87,16 +89,17 @@
       {#each app.wallets as w (w.id)}
         {@const d = app.data[w.address]}
         {@const f = app.fiatValue(w.network, d?.balance)}
-        <button class="card wcard" onclick={() => (app.view = { name: "wallet", id: w.id })}>
+        <button class="card wcard" style="--wc:{walletColor(w.address)}" onclick={() => (app.view = { name: "wallet", id: w.id })}>
           <div class="row">
+            <WalletAvatar name={w.name} address={w.address} size={26} />
             <span class="wn ellipsis">{w.name}</span>
             {#if w.network !== "mainnet"}<span class="badge warn">{NETWORKS[w.network].name}</span>{/if}
             {#if d?.delegate}<span class="badge brand">Delegate</span>{/if}
           </div>
           <div class="faint small mono">{shortAddress(w.address, 8)}</div>
-          <div class="wb num">{d ? formatArk(d.balance, 4, 2) : "…"} <span class="faint small">{NETWORKS[w.network].token}</span></div>
+          <div class="wb num">{d ? formatArk(d.balance, 4, 2) : "…"} <span class="tok small">{NETWORKS[w.network].token}</span></div>
           <div class="row small">
-            <span class="muted num">{f !== null ? formatFiat(f, cur) : ""}</span>
+            <span class="fiatv num">{f !== null ? formatFiat(f, cur) : ""}</span>
             <span class="spacer"></span>
             {#if d?.vote}
               <span class="muted"><Icon name="vote" size={12} /> <DelegateName network={w.network} publicKey={d.vote} /></span>
@@ -185,6 +188,8 @@
   }
   .wcard {
     text-align: left;
+    border-top: 3px solid var(--wc);
+    background: linear-gradient(170deg, color-mix(in srgb, var(--wc) 10%, var(--card)), var(--card) 55%);
     display: flex;
     flex-direction: column;
     gap: 4px;
@@ -200,6 +205,14 @@
   }
   .wn {
     font-weight: 600;
+  }
+  .tok {
+    color: var(--accent);
+    font-weight: 500;
+  }
+  .fiatv {
+    color: var(--green);
+    font-weight: 500;
   }
   .wb {
     font-size: 19px;
