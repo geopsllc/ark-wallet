@@ -1,6 +1,7 @@
 <script lang="ts">
   import Icon from "./Icon.svelte";
   import WalletAvatar from "./WalletAvatar.svelte";
+  import Address from "./Address.svelte";
   import { walletColor } from "../lib/colors";
   import { app } from "../lib/state.svelte";
   import { formatArk, formatFiat } from "../lib/format";
@@ -91,7 +92,7 @@
           <span class="spacer"></span>
           <span class="chev"><Icon name="chevron" size={14} /></span>
         </div>
-        <div class="waddr mono ellipsis">{w.address}</div>
+        <div class="waddr"><Address address={w.address} tail={6} /></div>
       </button>
     {:else}
       <div class="empty faint small">No wallets yet</div>

@@ -3,6 +3,7 @@
   import PriceChart from "./PriceChart.svelte";
   import DelegateName from "./DelegateName.svelte";
   import WalletAvatar from "./WalletAvatar.svelte";
+  import Address from "./Address.svelte";
   import { walletColor } from "../lib/colors";
   import { app } from "../lib/state.svelte";
   import { formatArk, formatFiat, shortAddress } from "../lib/format";
@@ -96,7 +97,7 @@
             {#if w.network !== "mainnet"}<span class="badge warn">{NETWORKS[w.network].name}</span>{/if}
             {#if d?.delegate}<span class="badge brand">Delegate</span>{/if}
           </div>
-          <div class="faint small mono">{shortAddress(w.address, 8)}</div>
+          <div class="faint small"><Address address={w.address} /></div>
           <div class="wb num">{d ? formatArk(d.balance, 4, 2) : "…"} <span class="tok small">{NETWORKS[w.network].token}</span></div>
           <div class="row small">
             <span class="fiatv num">{f !== null ? formatFiat(f, cur) : ""}</span>
