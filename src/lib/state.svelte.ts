@@ -41,7 +41,35 @@ class AppState {
   loaded = $state(false);
   wallets = $state<WalletEntry[]>([]);
   settings = $state<Settings>({ ...DEFAULT_SETTINGS });
-  view = $state<View>({ name: "dashboard" });
+  #view = $state<View>({ name: "dashboard" });
+  /** Panels visited before the current one, oldest first (for Back). */
+  #history: View[] = [];
+
+  get view(): View {
+    return this.#view;
+  }
+  /** Switching panels remembers the previous one so Back can return to it. */
+  set view(v: View) {
+    const cur = this.#view;
+    const same = cur.name === v.name && (cur as any).id === (v as any).id;
+    if (!same) {
+      this.#history.push(cur);
+      if (this.#history.length > 50) this.#history.shift();
+    }
+    this.#view = v;
+  }
+
+  /** Go back to the last panel that still exists. Returns false when there is nowhere to go. */
+  back(): boolean {
+    while (this.#history.length) {
+      const v = this.#history.pop()!;
+      if (v.name === "wallet" && !this.wallet(v.id)) continue; // wallet was removed since
+      if (v.name === this.#view.name && (v as any).id === (this.#view as any).id) continue;
+      this.#view = v;
+      return true;
+    }
+    return false;
+  }
 
   data = $state<Record<string, WalletData>>({});
   errors = $state<Record<string, string>>({});

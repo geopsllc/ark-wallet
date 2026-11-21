@@ -7,12 +7,16 @@
   import Toasts from "./components/Toasts.svelte";
   import TxOverlay from "./components/TxOverlay.svelte";
   import { app } from "./lib/state.svelte";
+  import { installBackNavigation } from "./lib/backnav";
 
   let adding = $state(false);
 
   $effect(() => {
     app.init();
   });
+
+  // mouse back button / trackpad swipe / Cmd+[ return to the previous panel
+  $effect(() => installBackNavigation(() => app.back()));
 
   const current = $derived(app.view.name === "wallet" ? app.wallet(app.view.id) : undefined);
 </script>
