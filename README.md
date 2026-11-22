@@ -114,6 +114,28 @@ background refresh keeps the last good balance on screen instead of showing an e
 - [Svelte 5](https://svelte.dev) + TypeScript + Vite UI
 - Data: official ARK Core v3 REST API; prices: CoinGecko public API
 
+## Downloads
+
+Every build is made by [GitHub Actions](.github/workflows/build.yml) from the tagged source, for x64 and arm64:
+
+| OS | Files |
+|---|---|
+| macOS | `macos-arm64.dmg` (Apple Silicon), `macos-x64.dmg` (Intel) |
+| Windows | `windows-x64.msi` / `windows-x64-setup.exe`, `windows-arm64-setup.exe` |
+| Linux | `.deb`, `.rpm` and `.AppImage` for `linux-x64` and `linux-arm64` |
+
+Check your download against `SHA256SUMS` in the release.
+
+The builds are **not signed with a developer certificate**: macOS builds are ad-hoc signed, Windows and Linux builds
+are unsigned. Your OS will warn the first time:
+
+- **macOS:** "Apple could not verify…". Open System Settings → Privacy & Security and click **Open Anyway**, or run
+  `xattr -dr com.apple.quarantine "/Applications/ARK Wallet.app"`.
+- **Windows:** SmartScreen "Windows protected your PC". Click **More info → Run anyway**.
+- **Linux:** make the AppImage executable (`chmod +x`), or install the `.deb` / `.rpm`.
+
+If you'd rather not trust a binary, build it yourself (below).
+
 ## Building from source
 
 Building it yourself is the recommended way to run ARK Wallet: you know exactly which code you are running.
@@ -219,6 +241,12 @@ cd .. && npm run check        # TypeScript / Svelte type check
 browser with a mocked, read-only backend (no signing), which is handy for UI work.
 
 Each platform builds its own installers; cross-compiling between operating systems is not supported.
+
+### Signed local macOS builds
+
+`tools/build-mac.sh` builds separate Apple Silicon and Intel `.dmg` files signed with your own certificate from the
+keychain (`--install` also installs the one for your Mac). The certificate is looked up at run time and never stored
+in the repo.
 
 ## License
 
