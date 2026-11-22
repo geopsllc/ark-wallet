@@ -45,18 +45,19 @@ impl KeyPair {
 
     /// ARK Schnorr (legacy bcrypto variant). `msg` is a 32-byte hash.
     pub fn sign_schnorr(&self, msg: &[u8; 32]) -> [u8; 64] {
-        let d = self.scalar();
+        // the private scalar and the nonce are both secret (either one plus a signature reveals the key)
+        let d = Zeroizing::new(self.scalar());
         let mut nonce_input = Zeroizing::new([0u8; 64]);
         nonce_input[..32].copy_from_slice(self.secret.as_ref());
         nonce_input[32..].copy_from_slice(msg);
-        let mut k = <Scalar as Reduce<U256>>::reduce_bytes(&sha256(nonce_input.as_ref()).into());
-        let r_point = (ProjectivePoint::GENERATOR * k).to_affine();
+        let mut k = Zeroizing::new(<Scalar as Reduce<U256>>::reduce_bytes(&sha256(nonce_input.as_ref()).into()));
+        let r_point = (ProjectivePoint::GENERATOR * *k).to_affine();
         let (rx, ry) = xy(&r_point).expect("non-identity nonce point");
         if !is_square(&ry) {
-            k = -k;
+            *k = -*k;
         }
         let e = challenge(&rx, &self.public, msg);
-        let s = k + e * d;
+        let s = *k + e * *d;
         let mut sig = [0u8; 64];
         sig[..32].copy_from_slice(&rx);
         sig[32..].copy_from_slice(&s.to_bytes());
@@ -152,12 +153,34 @@ pub fn decode_address(address: &str, pub_key_hash: u8) -> Result<[u8; 21], Strin
     let raw = bs58::decode(address.trim())
         .with_check(None)
         .into_vec()
-        .map_err(|_| format!("Invalid address: {address}"))?;
-    let raw: [u8; 21] = raw.try_into().map_err(|_| format!("Invalid address length: {address}"))?;
+        .map_err(|_| "Invalid address".to_string())?;
+    // errors never echo the input: if a passphrase was pasted into an address field by mistake,
+    // it must not end up in an error message on screen
+    let raw: [u8; 21] = raw.try_into().map_err(|_| "Invalid address length".to_string())?;
     if raw[0] != pub_key_hash {
-        return Err(format!("Address {address} belongs to a different network"));
+        return Err("The address belongs to a different network".into());
     }
     Ok(raw)
+}
+
+/// True when `text` is (or contains, as its whole content) a secret: a valid BIP39 mnemonic, or
+/// the passphrase of one of `public_keys`. Used to stop a passphrase being published by accident,
+/// e.g. pasted into a transaction memo or a message to sign, both of which become public.
+pub fn looks_like_secret(text: &str, public_keys: &[&[u8]]) -> bool {
+    let t = text.trim();
+    if t.is_empty() {
+        return false;
+    }
+    let words = Zeroizing::new(t.split_whitespace().collect::<Vec<_>>().join(" ").to_lowercase());
+    if matches!(words.split(' ').count(), 12 | 15 | 18 | 21 | 24)
+        && bip39::Mnemonic::parse_in_normalized(bip39::Language::English, &words).is_ok()
+    {
+        return true;
+    }
+    match KeyPair::from_passphrase(t) {
+        Ok(kp) => public_keys.iter().any(|pk| *pk == kp.public.as_slice()),
+        Err(_) => false,
+    }
 }
 
 pub fn generate_mnemonic(words: usize) -> Result<String, String> {
@@ -183,6 +206,21 @@ mod tests {
         let kp = KeyPair::from_passphrase("this is a top secret passphrase").unwrap();
         assert_eq!(kp.public_hex(), "034151a3ec46b5670a682b0a63394f863587d1bc97483b1b6c70eb58e7f0aed192");
         assert_eq!(address_from_public_key(&kp.public, 30), "D61mfSggzbvQgTUe6JhYKH2doHaqJ3Dyib");
+    }
+
+    #[test]
+    fn detects_secrets() {
+        let kp = KeyPair::from_passphrase("my own passphrase").unwrap();
+        let mine: &[&[u8]] = &[&kp.public];
+        assert!(looks_like_secret("  my own passphrase ", mine));
+        assert!(!looks_like_secret("rent for march", mine));
+        assert!(!looks_like_secret("", mine));
+        // any valid BIP39 mnemonic, whoever it belongs to, any spacing or case
+        let m = generate_mnemonic(12).unwrap();
+        assert!(looks_like_secret(&m.to_uppercase().replace(' ', "   "), &[]));
+        assert!(looks_like_secret(&generate_mnemonic(24).unwrap(), &[]));
+        // 12 dictionary words with a bad checksum are just words
+        assert!(!looks_like_secret("abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon", &[]));
     }
 
     #[test]

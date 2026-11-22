@@ -29,7 +29,9 @@
     found = null;
     if (mode !== "passphrase" || !p.trim()) return;
     deriveTimer = setTimeout(async () => {
-      found = await backend.deriveWallet(p, n);
+      const d = await backend.deriveWallet(p, n).catch(() => null);
+      // only the result for what is in the field now (an older, slower answer would be the wrong address)
+      if (passphrase === p && net.pubKeyHash === n && mode === "passphrase") found = d;
     }, 200);
   });
 

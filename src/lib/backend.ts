@@ -41,6 +41,33 @@ export async function openExternal(url: string) {
   }
 }
 
+// ---------- screen shield ----------
+// While a passphrase or mnemonic is readable on screen, the window is excluded from screenshots,
+// screen recording and screen sharing (macOS: NSWindow sharingType none; Windows: display
+// affinity "exclude from capture"; no effect on Linux). Reference-counted across components.
+let shields = 0;
+async function applyShield() {
+  if (!("__TAURI_INTERNALS__" in window)) return;
+  try {
+    const { getCurrentWindow } = await import("@tauri-apps/api/window");
+    await getCurrentWindow().setContentProtected(shields > 0);
+  } catch {
+    // best effort: unsupported platform
+  }
+}
+/** Hide the window from screen capture until the returned function is called. */
+export function shieldScreen(): () => void {
+  shields++;
+  applyShield();
+  let released = false;
+  return () => {
+    if (released) return;
+    released = true;
+    shields--;
+    applyShield();
+  };
+}
+
 export async function copyText(text: string) {
   try {
     await writeText(text);

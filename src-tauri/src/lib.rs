@@ -65,6 +65,10 @@ fn sign_message(message: String, mut passphrase: String, expected_address: Strin
     if crypto::address_from_public_key(&kp.public, network) != expected_address {
         return Err("This passphrase does not belong to this wallet".into());
     }
+    // a signed message is meant to be shared: never sign one that is a passphrase
+    if crypto::looks_like_secret(&message, &[&kp.public]) {
+        return Err("The message looks like a passphrase. Signed messages are meant to be shared, so it was not signed.".into());
+    }
     let sig = kp.sign_ecdsa(&crypto::sha256(message.as_bytes()));
     Ok(SignedMessage { message, public_key: kp.public_hex(), signature: hex::encode(sig) })
 }
@@ -178,6 +182,12 @@ fn save_state(app: tauri::AppHandle, state: Value) -> Result<(), String> {
     let p = state_path(&app)?;
     let tmp = p.with_extension("json.tmp");
     std::fs::write(&tmp, serde_json::to_vec_pretty(&state).map_err(|e| e.to_string())?).map_err(|e| e.to_string())?;
+    // the collection is not secret, but which addresses you own is private: owner-only access
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        let _ = std::fs::set_permissions(&tmp, std::fs::Permissions::from_mode(0o600));
+    }
     std::fs::rename(&tmp, &p).map_err(|e| e.to_string())
 }
 

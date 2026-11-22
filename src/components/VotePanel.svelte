@@ -144,7 +144,7 @@
   <div class="row" style="flex-wrap:wrap; row-gap:8px">
     <div class="search">
       <Icon name="search" size={14} />
-      <input bind:value={search} oninput={onSearch} placeholder="Search delegates" spellcheck="false" />
+      <input bind:value={search} oninput={onSearch} placeholder="Search delegates" spellcheck="false" autocomplete="off" maxlength="20" />
     </div>
     <span class="spacer"></span>
     {#if loading}<span class="spinner"></span>{/if}

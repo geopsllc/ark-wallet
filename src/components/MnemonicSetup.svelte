@@ -1,7 +1,6 @@
 <script lang="ts">
-  import CopyButton from "./CopyButton.svelte";
   import Icon from "./Icon.svelte";
-  import { backend } from "../lib/backend";
+  import { backend, shieldScreen } from "../lib/backend";
 
   let {
     words = 12,
@@ -17,6 +16,9 @@
   let written = $state(false);
   let checks = $state<{ index: number; value: string }[]>([]);
   let error = $state("");
+
+  // the words are on screen the whole time: keep the window out of screenshots / screen sharing
+  $effect(() => shieldScreen());
 
   async function generate() {
     mnemonic = await backend.generateMnemonic(count);
@@ -55,7 +57,6 @@
       </div>
       <span class="spacer"></span>
       <button class="btn ghost small" onclick={generate}><Icon name="refresh" size={13} /> New</button>
-      <CopyButton text={mnemonic} label="Copy" />
     </div>
     <div class="words">
       {#each list as w, i}
@@ -63,7 +64,8 @@
       {/each}
     </div>
     <div class="notice warn">
-      Write these words down in order and keep them offline. Anyone with them controls the funds, and this app never
+      Write these words down on paper, in order, and keep them offline. There is deliberately no copy button: the
+      clipboard can be read by other apps and synced to other devices. Anyone with them controls the funds, and this app never
       stores them. If you lose them, nobody can recover them.
     </div>
     <label class="row small" style="cursor:pointer"><input type="checkbox" bind:checked={written} /> I have written down the passphrase</label>
@@ -76,7 +78,7 @@
     <p class="muted" style="margin:0">Confirm your backup: enter these words from your passphrase.</p>
     <div class="checks">
       {#each checks as c}
-        <label class="field">Word #{c.index + 1}<input bind:value={c.value} spellcheck="false" autocapitalize="off" /></label>
+        <label class="field">Word #{c.index + 1}<input bind:value={c.value} autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" writingsuggestions="false" /></label>
       {/each}
     </div>
     {#if error}<div class="notice error">{error}</div>{/if}

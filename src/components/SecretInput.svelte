@@ -1,5 +1,6 @@
 <script lang="ts">
   import Icon from "./Icon.svelte";
+  import { shieldScreen } from "../lib/backend";
 
   let {
     value = $bindable(""),
@@ -13,6 +14,11 @@
   $effect(() => {
     if (autofocus && el) el.focus();
   });
+
+  // revealed text is readable on screen: keep it out of screenshots / screen sharing
+  $effect(() => {
+    if (show) return shieldScreen();
+  });
 </script>
 
 <div class="secret">
@@ -24,7 +30,9 @@
     class:invalid
     autocomplete="off"
     autocapitalize="off"
+    autocorrect="off"
     spellcheck="false"
+    writingsuggestions="false"
   />
   <button type="button" class="btn ghost icon" onclick={() => (show = !show)} title={show ? "Hide" : "Show"}>
     <Icon name={show ? "eyeoff" : "eye"} size={15} />

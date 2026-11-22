@@ -44,6 +44,20 @@ for macOS, Windows and Linux.
   Only the signed transaction is sent to the node.
 - The Rust core checks that the passphrase matches the wallet's address (and that the second passphrase matches the
   wallet's second public key) before signing, and verifies its own signature before returning it.
+- **Accidental publication is blocked.** A transaction is not signed when its memo is a valid BIP39 mnemonic or the
+  passphrase of the signing wallet, and a message is not signed when it is the passphrase itself. Memos and signed
+  messages are public, and memos stay on the blockchain forever.
+- **No clipboard for secrets.** New passphrases have no copy button. The clipboard can be read by other apps and synced
+  to other devices.
+- **No screen capture of secrets.** While a new passphrase or a revealed ("show") passphrase is on screen, the window
+  is excluded from screenshots, screen recording and screen sharing (macOS and Windows).
+- Passphrase fields turn off autocomplete, autocorrect, spellcheck and writing suggestions. Errors never repeat what
+  you typed, and nothing is logged.
+- The UI runs under a strict Content Security Policy (no remote or inline scripts, no network access except through
+  the Rust core) with frozen JavaScript prototypes. It may only open ARKScan links and write to the clipboard.
+- Limits: the passphrase passes through the webview as a JavaScript string, which can't be wiped from memory (it is
+  dropped as soon as it has been used). Malware already running as your user (a keylogger, or an app with
+  Accessibility access) can see what you type in any app. Use the wallet on a machine you trust.
 - Signing uses ARK's Schnorr scheme (the same one as ARK's own SDKs); message signing uses ECDSA. The serializer and
   signature code are tested against real mainnet transactions of every supported type (see
   `src-tauri/tests/fixtures`).

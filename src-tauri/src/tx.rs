@@ -235,6 +235,24 @@ pub fn build_and_sign(req: &BuildRequest) -> Result<TxData, String> {
         _ => None,
     };
 
+    // The memo is published on the chain for good: refuse one that is a passphrase
+    if let Some(memo) = req.vendor_field.as_deref() {
+        let mut keys_of_wallet: Vec<&[u8]> = vec![&keys.public];
+        if let Some(k) = &second_keys {
+            keys_of_wallet.push(&k.public);
+        }
+        let new_second = match req.new_second_passphrase.as_deref() {
+            Some(p) => Some(KeyPair::from_passphrase(p.trim())?),
+            None => None,
+        };
+        if let Some(k) = &new_second {
+            keys_of_wallet.push(&k.public);
+        }
+        if crypto::looks_like_secret(memo, &keys_of_wallet) {
+            return Err("The memo looks like a passphrase. Memos are public and stay on the blockchain forever, so this transaction was not signed.".into());
+        }
+    }
+
     let mut tx = TxData {
         version: 2,
         network: req.network,
@@ -442,6 +460,17 @@ mod tests {
         r.votes = Some(vec![a.into(), b.into()]); // vote before unvote: rejected
         assert!(build_and_sign(&r).is_err());
         r.votes = Some(vec![b.into()]); // plain unvote
+        assert!(build_and_sign(&r).is_ok());
+    }
+
+    #[test]
+    fn refuses_passphrase_as_memo() {
+        let mut r = req("transfer");
+        r.vendor_field = Some(" this is a top secret passphrase ".into());
+        assert!(build_and_sign(&r).unwrap_err().contains("memo looks like a passphrase"));
+        r.vendor_field = Some(crypto::generate_mnemonic(12).unwrap());
+        assert!(build_and_sign(&r).is_err());
+        r.vendor_field = Some("invoice 42".into());
         assert!(build_and_sign(&r).is_ok());
     }
 
