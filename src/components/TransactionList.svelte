@@ -117,7 +117,7 @@
                     {:else if r.counterparty}
                       {r.dir === "in" ? "from" : "to"} <PartyName network={wallet.network} address={r.counterparty} />
                     {:else if payments.length}
-                      to <PartyName network={wallet.network} address={shownRecipient(payments)} />{#if payments.length > 1}<span>&nbsp;+ {payments.length - 1} more</span>{/if}
+                      <span class="mp"><span class="mp-to">to&nbsp;</span><PartyName network={wallet.network} address={shownRecipient(payments)} />{#if payments.length > 1}<span class="mp-more">&nbsp;+ {payments.length - 1} more</span>{/if}</span>
                     {:else}
                       by <PartyName network={wallet.network} address={t.sender} />
                     {/if}
@@ -169,6 +169,15 @@
 </div>
 
 <style>
+  /* multipayment line: the recipient shrinks (with "…") before "+ N more" is ever cut */
+  .mp {
+    display: flex;
+    min-width: 0;
+  }
+  .mp-to,
+  .mp-more {
+    flex-shrink: 0;
+  }
   .bottom-pager {
     margin-top: -4px;
   }
@@ -183,14 +192,14 @@
   .memo {
     font-size: 12.5px;
   }
-  /* Fixed columns: Tx ID 150 + Amount 178 + Date 104 = 432px. Memo takes 24%; the Transaction column
-     gets the rest and needs ~260px for "Multipayment received" and a full from/to line. Columns hide
-     (memo, then date, then tx id) exactly when keeping them would squeeze the Transaction column below that. */
+  /* Fixed columns: Tx ID 150 + Amount 178 + Date 104 = 432px. Memo takes 20%; the Transaction column
+     gets the rest and needs ~296px for its longest line ("to <address> ↗ + 43 more" in the app's mono font).
+     Columns hide (memo, then date, then tx id) exactly when keeping them would squeeze it below that. */
   .c-id {
     width: 150px;
   }
   .c-memo {
-    width: 24%;
+    width: 20%;
   }
   .c-amt {
     width: 178px;
@@ -203,12 +212,12 @@
       display: none;
     }
   }
-  @container (max-width: 700px) {
+  @container (max-width: 728px) {
     .c-date {
       display: none;
     }
   }
-  @container (max-width: 596px) {
+  @container (max-width: 624px) {
     .c-id {
       display: none;
     }

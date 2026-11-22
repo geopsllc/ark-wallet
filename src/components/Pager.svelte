@@ -1,5 +1,5 @@
 <script lang="ts">
-  /** Page navigation: First, Prev, numbered pages (current ±span, first and last, "…" for gaps), Next, Last. */
+  /** Page navigation: Prev, numbered pages (always the first and last, current ±span, "…" for gaps), Next. */
   let {
     page = $bindable(1),
     pageCount,
@@ -30,7 +30,6 @@
 
 {#if pageCount > 1}
   <nav class="pager" aria-label="Pages">
-    <button class="pg wide" disabled={page <= 1} onclick={() => go(1)} title="First page">« First</button>
     <button class="pg wide" disabled={page <= 1} onclick={() => go(page - 1)} title="Previous page">‹ Prev</button>
     {#each items as it, i (typeof it === "number" ? it : `gap${i}`)}
       {#if it === "gap"}
@@ -42,7 +41,6 @@
       {/if}
     {/each}
     <button class="pg wide" disabled={page >= pageCount} onclick={() => go(page + 1)} title="Next page">Next ›</button>
-    <button class="pg wide" disabled={page >= pageCount} onclick={() => go(pageCount)} title="Last page">Last »</button>
   </nav>
 {/if}
 
