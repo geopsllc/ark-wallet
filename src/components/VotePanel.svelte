@@ -160,6 +160,7 @@
       </thead>
       <tbody>
         {#each list as d (d.publicKey)}
+          {@const own = app.wallets.find((w) => w.network === wallet.network && w.address === d.address)}
           <tr class:mine={d.publicKey === votedKey}>
             <td class="num c-rank" class:faint={d.rank > 51}>{d.rank}</td>
             <td>
@@ -168,7 +169,17 @@
                 {#if d.isResigned}<span class="badge red">Resigned</span>{/if}
                 {#if d.publicKey === votedKey}<span class="badge accent">Your vote</span>{/if}
               </div>
-              <div class="faint small"><Address address={d.address} tail={6} /></div>
+              <div class="small muted">
+                <!-- same behaviour as addresses in the transaction list: your own wallet opens its panel, others the explorer -->
+                <button
+                  class="xlink"
+                  title={own ? `${d.address} · open ${own.name}` : `${d.address} · open in explorer`}
+                  onclick={() => (own ? (app.view = { name: "wallet", id: own.id }) : openExternal(app.explorerAddress(wallet.network, d.address)))}
+                >
+                  <Address address={d.address} tail={6} />
+                  <Icon name={own ? "chevron" : "external"} size={11} />
+                </button>
+              </div>
             </td>
             <td class="right num c-votes">{formatArk(d.votes, 0, 0)}<Sym network={wallet.network} /></td>
             <td class="right num muted c-appr">{pct(d)}</td>
