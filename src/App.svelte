@@ -75,9 +75,10 @@
     min-width: 0;
   }
   .content {
-    max-width: 1180px;
+    /* use the window's width; only cap it on very wide screens, where long lines get hard to read */
+    max-width: 1800px;
     margin: 0 auto;
-    padding: 24px 28px 40px;
+    padding: 24px 18px 40px;
   }
   .content.fill {
     height: 100%;
