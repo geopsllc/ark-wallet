@@ -132,7 +132,7 @@
                 onclick={() => openExternal(app.explorerTx(wallet.network, t.id))}
               >{shortAddress(t.id, 6)}<Icon name="external" size={11} /></button>
             </td>
-            <td class="c-memo memo muted" title={t.vendorField ?? ""}>{t.vendorField ?? ""}</td>
+            <td class="c-memo memo muted" title={t.vendorField ?? ""}><div class="clamp2">{t.vendorField ?? ""}</div></td>
             <td class="right num c-amt">
               {#if r.amount !== 0n}
                 <div class:green={r.amount > 0n} class:red={r.amount < 0n} style="font-weight:500">
@@ -191,6 +191,17 @@
   }
   .memo {
     font-size: 12.5px;
+  }
+  /* memos wrap onto a second line, and only then truncate (a row is already two lines tall) */
+  .clamp2 {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    line-height: 1.35;
   }
   /* Column plan: Transaction gets exactly what its longest line needs (~272px in the app's fonts),
      Tx ID 144 + Amount 172 + Date 104 are fixed, and Memo takes whatever is left, so extra width goes to
