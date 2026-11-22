@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Address from "./Address.svelte";
   import Pager from "./Pager.svelte";
   import Sym from "./Sym.svelte";
   import ConfirmTx from "./ConfirmTx.svelte";
@@ -167,7 +168,7 @@
                 {#if d.isResigned}<span class="badge red">Resigned</span>{/if}
                 {#if d.publicKey === votedKey}<span class="badge accent">Your vote</span>{/if}
               </div>
-              <div class="faint small mono">{shortAddress(d.address, 8)}</div>
+              <div class="faint small"><Address address={d.address} tail={6} /></div>
             </td>
             <td class="right num c-votes">{formatArk(d.votes, 0, 0)}<Sym network={wallet.network} /></td>
             <td class="right num muted c-appr">{pct(d)}</td>
@@ -201,17 +202,19 @@
     width: 150px;
   }
   .c-appr {
-    width: 92px;
+    width: 112px;
   }
   .c-act {
     width: 112px;
   }
-  @container (max-width: 560px) {
+  /* Delegate (name + address) keeps >= ~200px: Rank 70 + Votes 150 + Approval 112 + action 112 are fixed,
+     so Approval drops below 644px and Votes below 532px */
+  @container (max-width: 644px) {
     .c-appr {
       display: none;
     }
   }
-  @container (max-width: 430px) {
+  @container (max-width: 532px) {
     .c-votes {
       display: none;
     }
