@@ -59,6 +59,8 @@ export interface Settings {
   feeChoice: FeeChoice;
   refreshSeconds: number;
   sidebarWidth?: number;
+  /** Rows per page in transaction tables (25 / 50 / 100) */
+  txPageSize?: number;
 }
 
 export interface PersistedState {

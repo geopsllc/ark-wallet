@@ -37,6 +37,9 @@ interface Toast {
   link?: { label: string; url: string };
 }
 
+/** Page sizes offered for transaction tables (the Core API allows up to 100). */
+export const TX_PAGE_SIZES = [25, 50, 100];
+
 class AppState {
   loaded = $state(false);
   wallets = $state<WalletEntry[]>([]);
@@ -371,6 +374,18 @@ class AppState {
   }
 
   // ---------- settings ----------
+
+  /** Rows per page for every transaction table; saved with the settings. */
+  get txPageSize(): number {
+    const n = this.settings.txPageSize ?? 25;
+    return TX_PAGE_SIZES.includes(n) ? n : 25;
+  }
+  setTxPageSize(n: number) {
+    if (TX_PAGE_SIZES.includes(n) && this.settings.txPageSize !== n) {
+      this.settings.txPageSize = n;
+      this.persist();
+    }
+  }
 
   setFeeChoice(c: FeeChoice) {
     if (this.settings.feeChoice !== c) {

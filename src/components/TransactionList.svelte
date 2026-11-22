@@ -4,7 +4,7 @@
   import Sym from "./Sym.svelte";
   import Icon from "./Icon.svelte";
   import DelegateName from "./DelegateName.svelte";
-  import { app } from "../lib/state.svelte";
+  import { app, TX_PAGE_SIZES } from "../lib/state.svelte";
   import { ark } from "../lib/ark";
   import { openExternal } from "../lib/backend";
   import { formatArk, formatDate, shortAddress, timeAgo } from "../lib/format";
@@ -27,7 +27,7 @@
     error = "";
     try {
       // transient API failures are retried automatically inside ark.* (see lib/retry.ts)
-      const r = await ark.transactions(app.apiUrl(wallet.network), wallet.address, page, filter);
+      const r = await ark.transactions(app.apiUrl(wallet.network), wallet.address, page, filter, app.txPageSize);
       txs = r.data;
       pageCount = Math.max(1, r.pageCount);
       total = r.totalCount;
@@ -45,11 +45,19 @@
   $effect(() => {
     void page;
     void filter;
+    void app.txPageSize;
     void wallet.address;
     void app.data[wallet.address]?.nonce;
     void app.data[wallet.address]?.balance;
     load();
   });
+
+  /** Change rows per page, staying on the page that holds the first row you were looking at. */
+  function setPageSize(n: number) {
+    const first = (page - 1) * app.txPageSize;
+    app.setTxPageSize(n);
+    page = Math.floor(first / n) + 1;
+  }
 
   function setFilter(f: typeof filter) {
     filter = f;
@@ -77,6 +85,9 @@
     <span class="spacer"></span>
     {#if loading}<span class="spinner"></span>{/if}
     <Pager bind:page {pageCount} />
+    <select class="psize" title="Transactions per page" value={app.txPageSize} onchange={(e) => setPageSize(+e.currentTarget.value)}>
+      {#each TX_PAGE_SIZES as n}<option value={n}>{n} / page</option>{/each}
+    </select>
   </div>
 
   {#if error}
@@ -177,6 +188,12 @@
   .mp-to,
   .mp-more {
     flex-shrink: 0;
+  }
+  .psize {
+    width: auto;
+    height: 28px;
+    padding: 0 26px 0 9px;
+    font-size: 12.5px;
   }
   .bottom-pager {
     margin-top: -4px;
