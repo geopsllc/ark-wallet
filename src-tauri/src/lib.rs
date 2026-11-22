@@ -85,12 +85,22 @@ fn address_from_public_key(public_key: String, network: u8) -> Result<String, St
 
 // ---------- HTTP (done in Rust to avoid CORS issues with custom nodes) ----------
 
+/// One shared client so connections (TLS sessions) are reused across requests.
+/// Timeouts come from measuring api.ark.io: successful calls take 0.1-3.3s and the server
+/// itself gives up with a 500 at ~3.3s, so anything past 10s is a stalled connection.
 fn client() -> Result<reqwest::Client, String> {
-    reqwest::Client::builder()
-        .timeout(Duration::from_secs(20))
+    static CLIENT: std::sync::OnceLock<reqwest::Client> = std::sync::OnceLock::new();
+    if let Some(c) = CLIENT.get() {
+        return Ok(c.clone());
+    }
+    let c = reqwest::Client::builder()
+        .connect_timeout(Duration::from_secs(5))
+        .timeout(Duration::from_secs(10))
+        .pool_idle_timeout(Duration::from_secs(90))
         .user_agent("ark-wallet-desktop/0.1")
         .build()
-        .map_err(|e| e.to_string())
+        .map_err(|e| e.to_string())?;
+    Ok(CLIENT.get_or_init(|| c).clone())
 }
 
 fn check_url(url: &str) -> Result<(), String> {
@@ -102,29 +112,47 @@ fn check_url(url: &str) -> Result<(), String> {
 }
 
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 struct HttpResponse {
     status: u16,
     body: Value,
+    /// Seconds from a Retry-After header (sent with 429 responses), if any.
+    retry_after: Option<f64>,
 }
 
 async fn finish(resp: reqwest::Response) -> Result<HttpResponse, String> {
     let status = resp.status().as_u16();
-    let text = resp.text().await.map_err(|e| e.to_string())?;
+    let retry_after = resp
+        .headers()
+        .get(reqwest::header::RETRY_AFTER)
+        .and_then(|v| v.to_str().ok())
+        .and_then(|v| v.trim().parse::<f64>().ok());
+    let text = resp.text().await.map_err(|e| format!("Network error: {e}"))?;
     let body = serde_json::from_str(&text).unwrap_or(Value::String(text));
-    Ok(HttpResponse { status, body })
+    Ok(HttpResponse { status, body, retry_after })
+}
+
+fn net_err(e: reqwest::Error) -> String {
+    if e.is_timeout() {
+        "Network error: the request timed out".into()
+    } else if e.is_connect() {
+        "Network error: could not connect to the server".into()
+    } else {
+        format!("Network error: {e}")
+    }
 }
 
 #[tauri::command]
 async fn http_get(url: String) -> Result<HttpResponse, String> {
     check_url(&url)?;
-    let resp = client()?.get(&url).send().await.map_err(|e| format!("Network error: {e}"))?;
+    let resp = client()?.get(&url).send().await.map_err(net_err)?;
     finish(resp).await
 }
 
 #[tauri::command]
 async fn http_post(url: String, body: Value) -> Result<HttpResponse, String> {
     check_url(&url)?;
-    let resp = client()?.post(&url).json(&body).send().await.map_err(|e| format!("Network error: {e}"))?;
+    let resp = client()?.post(&url).json(&body).send().await.map_err(net_err)?;
     finish(resp).await
 }
 

@@ -3,6 +3,7 @@ import { ark } from "./ark";
 import { fetchHistory, fetchPrice, type PriceInfo } from "./price";
 import { describeTx, involves, type TxRow } from "./txinfo";
 import { pickColor } from "./colors";
+import type { RetryMode } from "./retry";
 import {
   DEFAULT_SETTINGS,
   NETWORKS,
@@ -29,6 +30,8 @@ export interface TxEvent {
 
 /** New blocks are checked this often (ARK block time is 8 s). */
 const BLOCK_POLL_MS = 8000;
+/** More new blocks than this since the last poll (asleep/offline): reload wallets instead of scanning blocks. */
+const MAX_BLOCK_GAP = 20;
 
 interface Toast {
   id: number;
@@ -168,9 +171,7 @@ class AppState {
     this.watching[net] = true;
     try {
       const base = this.apiUrl(net);
-      const blocks = await ark.latestBlocks(base, 20);
-      if (!blocks.length) return;
-      const newest = blocks[0].height;
+      const newest = await ark.tipHeight(base);
       const prev = this.lastHeight[net];
       this.height[net] = newest;
       if (prev === undefined || newest <= prev) {
@@ -178,14 +179,17 @@ class AppState {
         return;
       }
       const mine = this.wallets.filter((w) => w.network === net);
-      if (newest - prev > blocks.length) {
+      if (newest - prev > MAX_BLOCK_GAP) {
         // we were asleep / offline for a while: just reload everything quietly
-        mine.forEach((w) => this.refreshWallet(w));
+        mine.forEach((w) => this.refreshWallet(w, "background"));
         this.lastHeight[net] = newest;
         return;
       }
+      const blocks = await ark.blocksInRange(base, prev + 1, newest);
+      // the API can lag a moment behind /blockchain: only advance once every block is visible
+      if (blocks.length < newest - prev) return;
       const touched = new Set<string>();
-      for (const b of blocks.filter((b) => b.height > prev && b.transactions > 0).reverse()) {
+      for (const b of blocks.filter((b) => b.transactions > 0)) {
         const txs = await ark.blockTransactions(base, b.id);
         for (const tx of txs) {
           for (const w of mine) {
@@ -199,9 +203,9 @@ class AppState {
         }
       }
       this.lastHeight[net] = newest;
-      for (const w of mine) if (touched.has(w.id)) this.refreshWallet(w);
+      for (const w of mine) if (touched.has(w.id)) this.refreshWallet(w, "background");
     } catch {
-      // transient errors are already retried in ark.*; try again next block
+      // background calls do not retry; lastHeight is unchanged, so the next poll covers this gap
     } finally {
       this.watching[net] = false;
     }
@@ -217,7 +221,7 @@ class AppState {
     let tick = 0;
     this.timer = setInterval(() => {
       tick++;
-      this.refreshAll();
+      this.refreshAll("background");
       if ((tick * secs) % 300 < secs) this.refreshPrice();
     }, secs * 1000);
   }
@@ -281,11 +285,16 @@ class AppState {
     this.persist();
   }
 
-  async refreshWallet(entry: WalletEntry) {
+  /**
+   * Reload a wallet. "interactive" (user action, first load) retries transient errors and reports
+   * failures; "background" (timer, block watcher) makes a single attempt and, when it fails but we
+   * already have data, keeps the data quietly: the next poll will catch up.
+   */
+  async refreshWallet(entry: WalletEntry, mode: RetryMode = "interactive") {
     const w = this.wallets.find((x) => x.id === entry.id) ?? entry; // always mutate the reactive copy
     this.loading[w.address] = true;
     try {
-      const d = await ark.wallet(this.apiUrl(w.network), w.address);
+      const d = await ark.wallet(this.apiUrl(w.network), w.address, mode);
       this.data[w.address] = d;
       delete this.errors[w.address];
       let changed = false;
@@ -304,14 +313,14 @@ class AppState {
       const pend = this.pendingNonce[w.address];
       if (pend !== undefined && BigInt(d.nonce) >= pend) delete this.pendingNonce[w.address];
     } catch (e: any) {
-      this.errors[w.address] = e?.message ?? String(e);
+      if (mode === "interactive" || !this.data[w.address]) this.errors[w.address] = e?.message ?? String(e);
     } finally {
       this.loading[w.address] = false;
     }
   }
 
-  refreshAll() {
-    for (const w of this.wallets) this.refreshWallet(w);
+  refreshAll(mode: RetryMode = "interactive") {
+    for (const w of this.wallets) this.refreshWallet(w, mode);
   }
 
   /** Nonce to use for the next transaction from this wallet. */
@@ -327,8 +336,8 @@ class AppState {
     this.pendingNonce[address] = BigInt(nonce);
     const w = this.wallets.find((x) => x.address === address);
     if (w) {
-      setTimeout(() => this.refreshWallet(w), 9000);
-      setTimeout(() => this.refreshWallet(w), 25000);
+      setTimeout(() => this.refreshWallet(w, "background"), 9000);
+      setTimeout(() => this.refreshWallet(w, "background"), 25000);
     }
   }
 

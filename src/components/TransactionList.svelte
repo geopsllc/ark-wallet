@@ -7,6 +7,7 @@
   import { app, TX_PAGE_SIZES } from "../lib/state.svelte";
   import { tick } from "svelte";
   import { ark } from "../lib/ark";
+  import { RateLimitError } from "../lib/retry";
   import { openExternal } from "../lib/backend";
   import { formatArk, formatDate, shortAddress, timeAgo } from "../lib/format";
   import { NETWORKS, type ApiTransaction, type WalletEntry } from "../lib/types";
@@ -23,24 +24,57 @@
   let loading = $state(false);
   let error = $state("");
 
+  // Total for the current wallet + filter; lets deep pages be read from the cheaper end (see ark.transactions)
+  let totalKey = "";
+  let seq = 0;
+  let retryTimer: ReturnType<typeof setTimeout> | undefined;
+  let retryIn = $state(0);
+
   async function load() {
+    const my = ++seq; // only the latest request may update the table (fast page clicks overlap)
+    clearTimeout(retryTimer);
+    retryIn = 0;
     loading = true;
     error = "";
+    const key = `${wallet.address}|${filter}`;
     try {
       // transient API failures are retried automatically inside ark.* (see lib/retry.ts)
-      const r = await ark.transactions(app.apiUrl(wallet.network), wallet.address, page, filter, app.txPageSize);
+      const r = await ark.transactions(
+        app.apiUrl(wallet.network), wallet.address, page, filter, app.txPageSize, key === totalKey ? total : 0,
+      );
+      if (my !== seq) return;
       txs = r.data;
       pageCount = Math.max(1, r.pageCount);
       total = r.totalCount;
+      totalKey = key;
     } catch (e: any) {
+      if (my !== seq) return;
       error = String(e?.message ?? e);
       txs = [];
-      total = 0;
-      pageCount = 1;
+      // keep the pager as it was, so another page can still be picked
+      if (key !== totalKey) {
+        total = 0;
+        pageCount = 1;
+      }
+      if (e instanceof RateLimitError) {
+        // try again by itself as soon as the API allows it
+        retryIn = Math.ceil(e.seconds);
+        const countdown = () => {
+          if (my !== seq) return;
+          if (--retryIn <= 0) load();
+          else retryTimer = setTimeout(countdown, 1000);
+        };
+        retryTimer = setTimeout(countdown, 1000);
+      }
     } finally {
-      loading = false;
+      if (my === seq) loading = false;
     }
   }
+
+  $effect(() => () => {
+    seq++;
+    clearTimeout(retryTimer);
+  });
 
   // reload when page / filter / wallet changes, and whenever the wallet's data refreshes
   $effect(() => {
@@ -161,7 +195,7 @@
 
   {#if error}
     <div class="notice error row">
-      <span>Could not load transactions: {error}</span>
+      <span>Could not load transactions: {retryIn ? error.replace(/Try again in \d+s\./, `Retrying in ${retryIn}s…`) : error}</span>
       <span class="spacer"></span>
       <button class="btn small" onclick={load}><Icon name="refresh" size={13} /> Retry</button>
     </div>

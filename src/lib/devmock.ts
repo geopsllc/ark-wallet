@@ -15,7 +15,8 @@ export function installDevMock() {
         try {
           body = JSON.parse(text);
         } catch {}
-        return { status: r.status, body };
+        const ra = parseFloat(r.headers.get("retry-after") ?? "");
+        return { status: r.status, body, retryAfter: Number.isFinite(ra) ? ra : null };
       }
       case "http_post":
         throw new Error("Broadcasting is disabled in browser preview");

@@ -5,6 +5,8 @@ import { writeText } from "@tauri-apps/plugin-clipboard-manager";
 export interface HttpResponse {
   status: number;
   body: any;
+  /** seconds from a Retry-After header (429 responses) */
+  retryAfter?: number | null;
 }
 
 export const backend = {

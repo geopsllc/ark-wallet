@@ -76,6 +76,24 @@ Every supported mainnet transaction type was signed with this code and broadcast
 | Second passphrase registration | 156 B | 0.00984 | `69bc8c9e2ca7ffa76c5c0fbd30fc706de7dd85ac911f6f3dfce14f5baf0b4ae7` |
 | Transfer signed with both passphrases | 220 B | 0.0063 | `056dcef401172d23a21293e7e112659e53b072d97c44e021486b0f25a28d4930` |
 
+## API behaviour
+
+All data comes from the public ARK API (`api.ark.io`, or a node URL you set per network). It was
+load-tested to tune how the wallet talks to it (November 2026):
+
+| What | Measured | How the wallet handles it |
+|---|---|---|
+| Rate limit | 200 requests / 60 s per IP (devnet 100); a `429` carries `Retry-After` | The host goes on cooldown for that long. Waits up to 3 s are absorbed silently; longer ones show "Retrying in Ns…" and reload by themselves |
+| Normal latency | 0.1–0.9 s typical, up to ~3.3 s for heavy queries | 5 s connect timeout, 10 s total per request |
+| Server overload | `500` after ~3.2 s (the server's own query timeout) | User actions retry twice (after 0.3 s and 1 s); network errors retry after 0.5 s and 1.5 s |
+| Deep transaction pages | newest-first queries more than ~20k rows deep usually fail with `500`; oldest-first succeeds at any depth in 1–2.5 s | Pages deeper than 20k rows are read oldest-first and reversed; newest-first is the fallback |
+| Counterparty names | one `/wallets/{address}` lookup per row would cost up to 100 requests per page | The delegate directory (~14 requests) is loaded once and refreshed every 30 min |
+| New blocks | `/blockchain` ~0.13 s; `/blocks?height.from&height.to` ~0.17 s; "latest blocks" queries ~3 s with frequent `500`s | The watcher polls the tip every 8 s and fetches only the new height range |
+
+Background work (the block watcher and periodic refresh) makes a single attempt and never
+retries: the next poll catches up, and it doesn't compete with what you are looking at. A failed
+background refresh keeps the last good balance on screen instead of showing an error.
+
 ## Tech stack
 
 - [Tauri 2](https://tauri.app) shell, with a Rust core for keys, AIP-11 serialization, signing and HTTP (`k256`, `bip39`)
