@@ -20,7 +20,7 @@ export const NETWORKS: Record<NetworkId, NetworkDef> = {
     token: "ARK",
     symbol: "Ѧ",
     defaultApi: "https://api.ark.io/api",
-    explorer: "https://live.arkscan.io",
+    explorer: "https://ark.geops.net",
     addressPrefix: "A",
     hasFiatValue: true,
   },

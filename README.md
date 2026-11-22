@@ -54,7 +54,8 @@ for macOS, Windows and Linux.
 - Passphrase fields turn off autocomplete, autocorrect, spellcheck and writing suggestions. Errors never repeat what
   you typed, and nothing is logged.
 - The UI runs under a strict Content Security Policy (no remote or inline scripts, no network access except through
-  the Rust core) with frozen JavaScript prototypes. It may only open ARKScan links and write to the clipboard.
+  the Rust core) with frozen JavaScript prototypes. It may only open explorer links (ark.geops.net for mainnet,
+  ARKScan for devnet) and write to the clipboard.
 - Limits: the passphrase passes through the webview as a JavaScript string, which can't be wiped from memory (it is
   dropped as soon as it has been used). Malware already running as your user (a keylogger, or an app with
   Accessibility access) can see what you type in any app. Use the wallet on a machine you trust.
