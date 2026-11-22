@@ -244,8 +244,8 @@ Each platform builds its own installers; cross-compiling between operating syste
 
 ### Signed local macOS builds
 
-`tools/build-mac.sh` builds separate Apple Silicon and Intel `.dmg` files signed with your own certificate from the
-keychain (`--install` also installs the one for your Mac). The certificate is looked up at run time and never stored
+`tools/build-mac.sh` builds an Apple Silicon `.dmg` signed with your own certificate from the keychain
+(`--install` also installs it). The certificate is looked up at run time and never stored
 in the repo.
 
 ## License
