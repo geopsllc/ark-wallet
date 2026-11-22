@@ -5,6 +5,7 @@
   import Icon from "./Icon.svelte";
   import DelegateName from "./DelegateName.svelte";
   import { app, TX_PAGE_SIZES } from "../lib/state.svelte";
+  import { tick } from "svelte";
   import { ark } from "../lib/ark";
   import { openExternal } from "../lib/backend";
   import { formatArk, formatDate, shortAddress, timeAgo } from "../lib/format";
@@ -52,6 +53,73 @@
     load();
   });
 
+  // Keep the toolbar on one line. First the transaction count gives way; if that is not enough,
+  // the pager shows fewer page numbers. Both come back when there is room. Each check runs
+  // before the browser paints, so there is no visible flicker.
+  let bar = $state<HTMLDivElement>();
+  let countEl = $state<HTMLSpanElement>();
+  let showCount = $state(true);
+  let compact = $state(false);
+  let fitting = false;
+
+  function wraps(): boolean {
+    if (!bar) return false;
+    const items = [...bar.children].filter(
+      (el) => !el.classList.contains("spacer") && (el as HTMLElement).offsetParent !== null,
+    ) as HTMLElement[];
+    if (items.length < 2) return false;
+    const mid = (el: HTMLElement) => el.offsetTop + el.offsetHeight / 2;
+    const first = mid(items[0]);
+    return items.some((el) => Math.abs(mid(el) - first) > 4);
+  }
+
+  let again = false;
+  async function fit() {
+    if (!bar) return;
+    if (fitting) {
+      again = true; // a resize or page change arrived mid-check: run once more afterwards
+      return;
+    }
+    fitting = true;
+    do {
+      again = false;
+      showCount = true;
+      compact = false;
+      await tick();
+      if (wraps()) {
+        showCount = false;
+        await tick();
+        if (wraps()) {
+          compact = true;
+          await tick();
+        }
+      }
+    } while (again);
+    fitting = false;
+  }
+
+  $effect(() => {
+    if (!bar) return;
+    let lastW = -1;
+    const ro = new ResizeObserver(() => {
+      const w = bar!.clientWidth;
+      if (w !== lastW) {
+        lastW = w;
+        fit();
+      }
+    });
+    ro.observe(bar);
+    return () => ro.disconnect();
+  });
+  // the pager's width changes with the page numbers; re-check whenever they change
+  $effect(() => {
+    void page;
+    void pageCount;
+    void total;
+    void app.txPageSize;
+    fit();
+  });
+
   /** Change rows per page, staying on the page that holds the first row you were looking at. */
   function setPageSize(n: number) {
     const first = (page - 1) * app.txPageSize;
@@ -75,16 +143,17 @@
 </script>
 
 <div class="stack">
-  <div class="row" style="flex-wrap:wrap; row-gap:8px">
+  <div class="row" style="flex-wrap:wrap; row-gap:8px" bind:this={bar}>
     <div class="seg">
       <button class:on={filter === "all"} onclick={() => setFilter("all")}>All</button>
       <button class:on={filter === "received"} onclick={() => setFilter("received")}>Received</button>
       <button class:on={filter === "sent"} onclick={() => setFilter("sent")}>Sent</button>
     </div>
-    <span class="faint small num">{total.toLocaleString()} transactions</span>
+    <span class="faint small num count" class:gone={!showCount} bind:this={countEl}>{total.toLocaleString()} transactions</span>
     <span class="spacer"></span>
-    {#if loading}<span class="spinner"></span>{/if}
-    <Pager bind:page {pageCount} />
+    <!-- fixed slot so the spinner never changes the toolbar's width -->
+    <span class="spin-slot">{#if loading}<span class="spinner"></span>{/if}</span>
+    <Pager bind:page {pageCount} span={compact ? 1 : 2} />
     <select class="psize" title="Transactions per page" value={app.txPageSize} onchange={(e) => setPageSize(+e.currentTarget.value)}>
       {#each TX_PAGE_SIZES as n}<option value={n}>{n} rows</option>{/each}
     </select>
@@ -188,6 +257,16 @@
   .mp-to,
   .mp-more {
     flex-shrink: 0;
+  }
+  .count.gone {
+    display: none;
+  }
+  .spin-slot {
+    width: 16px;
+    height: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
   .psize {
     width: auto;
