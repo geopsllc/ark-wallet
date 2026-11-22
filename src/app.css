@@ -439,6 +439,19 @@ table.list td div[style*="min-width"] > div {
 .tablebox {
   container-type: inline-size;
 }
+/* a list view that shrinks to the space left and scrolls only its table (thead stays sticky) */
+.fitlist {
+  min-height: 0;
+  flex: 0 1 auto;
+}
+.fitlist > * {
+  flex-shrink: 0;
+}
+.fitlist > .tablebox {
+  flex: 0 1 auto;
+  min-height: 140px;
+  overflow-y: auto !important;
+}
 table.list th {
   text-align: left;
   font-size: 12px;

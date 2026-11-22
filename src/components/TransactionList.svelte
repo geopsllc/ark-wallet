@@ -176,7 +176,7 @@
 
 </script>
 
-<div class="stack">
+<div class="stack fitlist">
   <div class="row" style="flex-wrap:wrap; row-gap:8px" bind:this={bar}>
     <div class="seg">
       <button class:on={filter === "all"} onclick={() => setFilter("all")}>All</button>
@@ -201,7 +201,7 @@
     </div>
   {/if}
 
-  <div class="panel tablebox" style="overflow:hidden">
+  <div class="panel tablebox">
     <table class="list">
       <thead>
         <tr>
@@ -277,9 +277,6 @@
       </tbody>
     </table>
   </div>
-  {#if pageCount > 1 && txs.length}
-    <div class="row bottom-pager"><span class="spacer"></span><Pager bind:page {pageCount} /></div>
-  {/if}
 </div>
 
 <style>
@@ -314,9 +311,6 @@
       4px 4px,
       4px 4px;
     border-radius: 6px;
-  }
-  .bottom-pager {
-    margin-top: -4px;
   }
   .txid {
     white-space: nowrap;

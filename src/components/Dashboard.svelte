@@ -102,9 +102,9 @@
             <span class="fiatv num">{f !== null ? formatFiat(f, cur) : ""}</span>
             <span class="spacer"></span>
             {#if d?.vote}
-              <span class="muted"><Icon name="vote" size={12} /> <DelegateName network={w.network} publicKey={d.vote} /></span>
+              <span class="votes" title="Voting for"><Icon name="vote" size={14} /> <DelegateName network={w.network} publicKey={d.vote} /></span>
             {:else if d}
-              <span class="faint">not voting</span>
+              <span class="votes none">not voting</span>
             {/if}
           </div>
           {#if app.errors[w.address]}<div class="red small ellipsis">{app.errors[w.address]}</div>{/if}
@@ -217,6 +217,27 @@
   .wn {
     display: flex;
     min-width: 0;
+  }
+  .votes {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-width: 0;
+    max-width: 60%;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .votes.none {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--faint);
+    font-weight: 500;
   }
   .fiatv {
     color: var(--green);

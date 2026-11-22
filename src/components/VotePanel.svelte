@@ -99,7 +99,7 @@
   }
 </script>
 
-<div class="stack">
+<div class="stack fitlist">
   <div class="current card">
     {#if votedKey}
       <div class="row">

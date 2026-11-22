@@ -84,14 +84,13 @@
           <span class="spacer"></span>
           {#if app.loading[w.address] && !d}<span class="spinner" style="width:10px;height:10px"></span>{/if}
           {#if app.errors[w.address]}<span class="red" title={app.errors[w.address]}>!</span>{/if}
-        </div>
-        <div class="row" style="gap:6px">
-          <div class="wbal num">{d ? formatArk(d.balance, 2, 2) : "…"}<Sym network={w.network} /></div>
-          <span class="spacer"></span>
           <span class="chev"><Icon name="chevron" size={14} /></span>
         </div>
-        <div class="wfiat num" title={w.address}>
-          {#if fv !== null}<span class="usd">{formatFiat(fv, app.settings.currency)}</span>{:else if !NETWORKS[w.network].hasFiatValue}<span class="faint">no market value</span>{:else}&nbsp;{/if}
+        <div class="wline" title={w.address}>
+          <span class="wbal num">{d ? formatArk(d.balance, 2, 2) : "…"}<Sym network={w.network} /></span>
+          <span class="wfiat num">
+            {#if fv !== null}<span class="usd">{formatFiat(fv, app.settings.currency)}</span>{:else if !NETWORKS[w.network].hasFiatValue}<span class="faint">no value</span>{/if}
+          </span>
         </div>
       </button>
     {:else}
@@ -191,11 +190,11 @@
     border: 1px solid var(--border-strong);
     border-left: 3px solid var(--wc);
     border-radius: 10px;
-    padding: 9px 10px 9px 12px;
+    padding: 6px 8px 6px 11px;
     text-align: left;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 1px;
     flex-shrink: 0;
     transition:
       border-color 0.12s,
@@ -227,9 +226,18 @@
     color: var(--accent);
     transform: translateX(2px);
   }
+  /* balance left, fiat right; the fiat drops under the balance when the sidebar is narrow */
+  .wline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    column-gap: 8px;
+  }
   .wfiat {
     font-size: 12.5px;
     font-weight: 500;
+    margin-left: auto;
   }
   .wname {
     display: flex;

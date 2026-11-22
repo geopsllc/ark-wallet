@@ -44,7 +44,7 @@
 <div class="shell">
   <Sidebar onadd={() => (adding = true)} />
   <main>
-    <div class="content">
+    <div class="content" class:fill={app.loaded && app.view.name === "wallet" && !!current}>
       {#if !app.loaded}
         <div class="row muted"><span class="spinner"></span> Loading…</div>
       {:else if app.view.name === "settings"}
@@ -78,5 +78,11 @@
     max-width: 1180px;
     margin: 0 auto;
     padding: 24px 28px 40px;
+  }
+  .content.fill {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 18px;
   }
 </style>

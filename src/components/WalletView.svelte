@@ -55,7 +55,7 @@
   ];
 </script>
 
-<div class="stack" style="gap:18px">
+<div class="stack page">
   <div class="card head">
     <div class="row">
       {#if editing}
@@ -125,7 +125,7 @@
     {/each}
   </div>
 
-  <div class="fade">
+  <div class="fade tabbody">
     {#key wallet.id}
       {#if tab === "tx"}<TransactionList {wallet} />
       {:else if tab === "send"}<SendForm {wallet} />
@@ -153,11 +153,29 @@
 {/if}
 
 <style>
+  /* the page fills the window: the header and tabs stay put, tables scroll inside themselves,
+     other tabs scroll as a whole */
+  .page {
+    gap: 14px;
+    flex: 1;
+    min-height: 0;
+  }
+  .head,
+  .tabs {
+    flex-shrink: 0;
+  }
+  .tabbody {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
   .head {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    padding: 18px 20px;
+    gap: 2px;
+    padding: 12px 18px;
     background: linear-gradient(170deg, rgba(115, 191, 255, 0.08), var(--card) 55%);
   }
   .head h1 {
@@ -181,17 +199,17 @@
     display: flex;
     align-items: flex-end;
     gap: 26px;
-    margin-top: 8px;
+    margin-top: 2px;
   }
   .bal {
-    font-size: 30px;
+    font-size: 26px;
     font-weight: 650;
     letter-spacing: -0.02em;
   }
   .fiat {
     color: var(--green);
-    font-size: 15px;
-    min-height: 20px;
+    font-size: 14px;
+    min-height: 18px;
   }
   .vote-box {
     display: flex;
