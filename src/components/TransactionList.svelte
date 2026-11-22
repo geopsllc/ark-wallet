@@ -86,7 +86,7 @@
     {#if loading}<span class="spinner"></span>{/if}
     <Pager bind:page {pageCount} />
     <select class="psize" title="Transactions per page" value={app.txPageSize} onchange={(e) => setPageSize(+e.currentTarget.value)}>
-      {#each TX_PAGE_SIZES as n}<option value={n}>{n} / page</option>{/each}
+      {#each TX_PAGE_SIZES as n}<option value={n}>{n} rows</option>{/each}
     </select>
   </div>
 
@@ -191,9 +191,16 @@
   }
   .psize {
     width: auto;
-    height: 28px;
-    padding: 0 26px 0 9px;
-    font-size: 12.5px;
+    height: 24px;
+    padding: 0 20px 0 7px;
+    font-size: 11.5px;
+    background-position:
+      calc(100% - 12px) 50%,
+      calc(100% - 8px) 50%;
+    background-size:
+      4px 4px,
+      4px 4px;
+    border-radius: 6px;
   }
   .bottom-pager {
     margin-top: -4px;
