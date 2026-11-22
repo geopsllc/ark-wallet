@@ -67,7 +67,7 @@
         </div>
       </div>
       {#if app.priceError}<div class="notice warn small">Price unavailable: {app.priceError}</div>{/if}
-      <PriceChart points={app.history} currency={cur} height={110} />
+      <PriceChart points={app.history} currency={cur} height={72} />
       <div class="faint small" style="text-align:right">Data: CoinGecko</div>
     </div>
   </div>
@@ -163,7 +163,7 @@
     display: flex;
     gap: 26px;
     margin-top: auto;
-    padding-top: 16px;
+    padding-top: 10px;
   }
   .meta div,
   .mk div {
@@ -173,7 +173,7 @@
   .price {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 6px;
   }
   .pv {
     color: var(--green);
