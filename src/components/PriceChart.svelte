@@ -59,6 +59,8 @@
     </svg>
     {#if hover !== null}
       {@const p = points[hover]}
+      <!-- HTML dot: the SVG stretches (preserveAspectRatio none), which would squash an SVG circle -->
+      <div class="dot" style="left:{(stats.x(p[0]) / W) * 100}%;top:{stats.y(p[1])}px"></div>
       <div class="tip" style="left:{(stats.x(p[0]) / W) * 100}%">
         <b class="usd">{formatFiat(p[1], currency)}</b>
         <span>{new Date(p[0]).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
@@ -81,7 +83,17 @@
   svg {
     width: 100%;
     display: block;
-    cursor: crosshair;
+  }
+  .dot {
+    position: absolute;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #73bfff;
+    border: 2px solid var(--panel);
+    box-shadow: 0 0 0 1px rgba(115, 191, 255, 0.5);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
   }
   .axis {
     display: flex;
