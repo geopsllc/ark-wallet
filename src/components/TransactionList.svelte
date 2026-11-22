@@ -91,7 +91,7 @@
     <table class="list">
       <thead>
         <tr>
-          <th>Transaction</th>
+          <th class="c-tx">Transaction</th>
           <th class="c-id">Tx ID</th>
           <th class="c-memo">Memo</th>
           <th class="right c-amt">Amount</th>
@@ -192,32 +192,37 @@
   .memo {
     font-size: 12.5px;
   }
-  /* Fixed columns: Tx ID 150 + Amount 178 + Date 104 = 432px. Memo takes 20%; the Transaction column
-     gets the rest and needs ~296px for its longest line ("to <address> ↗ + 43 more" in the app's mono font).
-     Columns hide (memo, then date, then tx id) exactly when keeping them would squeeze it below that. */
-  .c-id {
-    width: 150px;
+  /* Column plan: Transaction gets exactly what its longest line needs (~272px in the app's fonts),
+     Tx ID 144 + Amount 172 + Date 104 are fixed, and Memo takes whatever is left, so extra width goes to
+     the memo instead of leaving a gap after the transaction. Memo shows once it can have >= 120px
+     (692 + 120 = 812); without it, Transaction takes the slack. Date and Tx ID drop out when keeping them
+     would push Transaction below 272px. */
+  .c-tx {
+    width: 272px;
   }
-  .c-memo {
-    width: 20%;
+  .c-id {
+    width: 144px;
   }
   .c-amt {
-    width: 178px;
+    width: 172px;
   }
   .c-date {
     width: 104px;
   }
-  @container (max-width: 910px) {
+  @container (max-width: 812px) {
     .c-memo {
       display: none;
     }
+    .c-tx {
+      width: auto;
+    }
   }
-  @container (max-width: 728px) {
+  @container (max-width: 692px) {
     .c-date {
       display: none;
     }
   }
-  @container (max-width: 624px) {
+  @container (max-width: 588px) {
     .c-id {
       display: none;
     }
