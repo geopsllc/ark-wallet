@@ -18,6 +18,22 @@ export function installDevMock() {
         const ra = parseFloat(r.headers.get("retry-after") ?? "");
         return { status: r.status, body, retryAfter: Number.isFinite(ra) ? ra : null };
       }
+      case "exchange_post": {
+        // the local Exchange Worker (its own repo, `npm run dev`) allows the dev preview's origin (DEV_ORIGIN)
+        const r = await fetch("http://127.0.0.1:8787" + args.path, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(args.body),
+        });
+        const ra = parseFloat(r.headers.get("retry-after") ?? "");
+        return { status: r.status, body: await r.json().catch(() => null), retryAfter: Number.isFinite(ra) ? ra : null };
+      }
+      case "evm_address_check": {
+        // no keccak in the preview: format only (the app checks the EIP-55 checksum in Rust)
+        const a = String(args.address).trim();
+        if (!/^0x[0-9a-fA-F]{40}$/.test(a)) return "invalid";
+        return /[a-f]/.test(a.slice(2)) && /[A-F]/.test(a.slice(2)) ? "ok" : "unchecked";
+      }
       case "http_post":
         throw new Error("Broadcasting is disabled in browser preview");
       case "load_state": {

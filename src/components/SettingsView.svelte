@@ -4,6 +4,7 @@
   import { ark } from "../lib/ark";
   import { CURRENCIES } from "../lib/price";
   import { NETWORKS, type NetworkId } from "../lib/types";
+  import { evmAddressCheck, choiceLabel, coinOf, isOffered, parseChoice, payoutNetwork, PAYOUT_CHOICES } from "../lib/drain";
 
   const ids = Object.keys(NETWORKS) as NetworkId[];
 
@@ -44,6 +45,60 @@
     app.setApiUrl(id, null);
     status[id] = { kind: "ok", text: "Using the official ARK API" };
   }
+
+  // ---- USDC/USDT payout address book (Exchange tab); coin and network are picked together ("usdc:polygon") ----
+  let pName = $state("");
+  let pChoice = $state<string>(PAYOUT_CHOICES[0].value);
+  let pAddr = $state("");
+  let pError = $state("");
+  let pNote = $state("");
+  let editing = $state<string | null>(null);
+  let editName = $state("");
+  let editChoice = $state<string>(PAYOUT_CHOICES[0].value);
+  const sameEntry = (x: { coin: string; network: string; address: string }, coin: string, network: string, address: string) =>
+    coinOf(x.coin) === coin && x.network === network && x.address.toLowerCase() === address.toLowerCase();
+
+  async function addPayout() {
+    pError = "";
+    pNote = "";
+    const name = pName.trim();
+    const address = pAddr.trim();
+    if (!name) return (pError = "Give the address a name");
+    const check = await evmAddressCheck(address);
+    if (check === "invalid") return (pError = "Not a valid 0x address (0x followed by 40 hex characters)");
+    if (check === "bad-checksum") return (pError = "This address has a typo: its upper/lower-case checksum doesn't match");
+    const { coin, network } = parseChoice(pChoice);
+    if (app.payoutAddresses.some((p) => sameEntry(p, coin, network, address)))
+      return (pError = `That address is already in the list for ${choiceLabel(coin, network)}`);
+    app.addPayoutAddress(name, coin, network, address);
+    if (check === "unchecked") pNote = "Saved. This address is all one case, so it has no checksum to verify: double-check it.";
+    pName = "";
+    pAddr = "";
+  }
+
+  function startEdit(id: string) {
+    const p = app.payoutAddresses.find((x) => x.id === id);
+    if (!p) return;
+    pError = "";
+    pNote = "";
+    editing = id;
+    editName = p.name;
+    const cur = `${coinOf(p.coin)}:${payoutNetwork(p.network).id}`;
+    editChoice = PAYOUT_CHOICES.some((c) => c.value === cur) ? cur : PAYOUT_CHOICES[0].value;
+  }
+  function saveEdit() {
+    const p = app.payoutAddresses.find((x) => x.id === editing);
+    if (!p) return (editing = null);
+    const name = editName.trim();
+    if (!name) return (pError = "Give the address a name");
+    const { coin, network } = parseChoice(editChoice);
+    if (app.payoutAddresses.some((x) => x.id !== p.id && sameEntry(x, coin, network, p.address)))
+      return (pError = `That address is already in the list for ${choiceLabel(coin, network)}`);
+    app.updatePayoutAddress(p.id, { name, coin, network });
+    pError = "";
+    editing = null;
+  }
+
 
   function setRefresh(e: Event) {
     app.settings.refreshSeconds = Number((e.target as HTMLSelectElement).value);
@@ -94,6 +149,57 @@
         <button class:on={app.settings.feeChoice === "avg"} onclick={() => app.setFeeChoice("avg")}>Average</button>
       </div>
     </div>
+  </section>
+
+  <section class="card stack">
+    <div class="row"><Icon name="swap" /><h2>Payout addresses</h2></div>
+    <p class="muted" style="margin:0">
+      Where the Exchange tab sends USDC or USDT: each entry is an address for one coin on one network. Only add
+      addresses you control there (a regular wallet, or a deposit address your exchange gives you for exactly that
+      coin and network). The wallet refuses any order that doesn't pay out to the entry you pick.
+    </p>
+    {#if app.payoutAddresses.length}
+      <div class="plist">
+        {#each app.payoutAddresses as p (p.id)}
+          <div class="prow" class:editing={editing === p.id}>
+            {#if editing === p.id}
+              <!-- svelte-ignore a11y_autofocus -->
+              <input class="pname-input" bind:value={editName} maxlength="40" autofocus
+                onkeydown={(e) => { if (e.key === "Enter") saveEdit(); if (e.key === "Escape") { editing = null; pError = ""; } }} />
+              <select class="pnet-edit" bind:value={editChoice} title="Coin and network of this address">
+                {#each PAYOUT_CHOICES as c (c.value)}<option value={c.value}>{c.label}</option>{/each}
+              </select>
+              <span class="mono small paddr-full">{p.address}</span>
+              <button class="btn primary small psave" title="Save" aria-label="Save" onclick={saveEdit}><Icon name="check" size={13} /></button>
+              <button class="btn ghost small" title="Cancel" aria-label="Cancel" onclick={() => { editing = null; pError = ""; }}><Icon name="x" size={13} /></button>
+            {:else}
+              <span class="pname">{p.name}</span>
+              {#if isOffered(p.coin, p.network)}
+                <span class="badge pnet">{choiceLabel(p.coin, p.network)}</span>
+              {:else}
+                <span class="badge pnet warn" title="No longer offered on the Exchange tab: edit it to pick another network, or remove it">{choiceLabel(p.coin, p.network)} · not offered</span>
+              {/if}
+              <span class="mono small paddr" title={p.address}>{p.address}</span>
+              <button class="btn ghost small" title="Edit name, coin and network" onclick={() => startEdit(p.id)}><Icon name="edit" size={13} /></button>
+              <button class="btn ghost small" title="Remove" onclick={() => app.removePayoutAddress(p.id)}><Icon name="trash" size={13} /></button>
+            {/if}
+          </div>
+        {/each}
+      </div>
+    {:else}
+      <div class="faint small">No payout addresses yet.</div>
+    {/if}
+    <div class="row padd">
+      <input bind:value={pName} placeholder="Name (e.g. Ledger)" maxlength="40" spellcheck="false" autocomplete="off" style="width:170px" />
+      <select bind:value={pChoice} style="width:175px" title="Coin and network">
+        {#each PAYOUT_CHOICES as c (c.value)}<option value={c.value}>{c.label}</option>{/each}
+      </select>
+      <input bind:value={pAddr} class="mono" placeholder="0x… address" spellcheck="false" autocomplete="off" style="flex:1"
+        onkeydown={(e) => e.key === "Enter" && addPayout()} />
+      <button class="btn primary" onclick={addPayout}><Icon name="plus" size={13} /> Add</button>
+    </div>
+    {#if pError}<div class="small red">{pError}</div>{/if}
+    {#if pNote}<div class="small warn-text">{pNote}</div>{/if}
   </section>
 
   <section class="card stack">
@@ -152,7 +258,6 @@
 
 <style>
   .settings {
-    max-width: 760px;
     gap: 16px;
   }
   .net {
@@ -166,6 +271,57 @@
     align-items: center;
     justify-content: space-between;
     gap: 20px;
+  }
+  .plist {
+    display: flex;
+    flex-direction: column;
+  }
+  .prow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .pname {
+    font-weight: 600;
+    width: 160px;
+    flex-shrink: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .pname-input {
+    width: 180px;
+    flex-shrink: 0;
+  }
+  .pnet {
+    flex-shrink: 0;
+  }
+  .pnet-edit {
+    flex-shrink: 0;
+    width: 175px;
+  }
+  .paddr {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  /* edit mode: the address is never cut off; the row wraps only when the window is too narrow for it */
+  .prow.editing {
+    flex-wrap: wrap;
+    row-gap: 6px;
+  }
+  .paddr-full {
+    white-space: nowrap;
+  }
+  .psave {
+    margin-left: auto;
+  }
+  .warn-text {
+    color: var(--warn, #e0b050);
   }
   .switch {
     flex-shrink: 0;

@@ -63,12 +63,52 @@ export interface Settings {
   txPageSize?: number;
   /** Count delegate wallets in the portfolio total (off by default: their balance is shared out to voters) */
   includeDelegates?: boolean;
+  /** Your named USDC/USDT payout addresses for the Exchange tab */
+  payoutAddresses?: PayoutAddress[];
+  /** id of the payout address used last */
+  lastPayoutId?: string;
+}
+
+export interface PayoutAddress {
+  id: string;
+  name: string;
+  /** coin received: "usdc" or "usdt" (older entries are USDC) */
+  coin: string;
+  /** network id (polygon, base, ethereum, …) */
+  network: string;
+  /** 0x address; every exchange order is checked against it */
+  address: string;
+}
+
+/** One drain order, kept so its links stay reachable after the screen is closed. */
+export interface DrainRecord {
+  id: string;
+  walletId: string;
+  address: string;
+  at: number;
+  service: string;
+  provider: string;
+  orderId: string;
+  providerOrderId: string;
+  depositAddress: string;
+  /** arktoshi */
+  amount: string;
+  amountTo: string;
+  payoutAddress: string;
+  networkTo: string;
+  /** network id (polygon, base, …); older records are Polygon */
+  chain?: string;
+  /** "usdc" or "usdt"; older records are USDC */
+  coin?: string;
+  txId?: string;
+  status: "created" | "sent";
 }
 
 export interface PersistedState {
   version: 1;
   wallets: WalletEntry[];
   settings: Settings;
+  drains?: DrainRecord[];
 }
 
 export const DEFAULT_SETTINGS: Settings = {

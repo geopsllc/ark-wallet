@@ -160,6 +160,53 @@ async fn http_post(url: String, body: Value) -> Result<HttpResponse, String> {
     finish(resp).await
 }
 
+// ---------- Exchange Worker ----------
+// The only calls the Exchange tab makes: quote and create an order through the exchange Worker, which holds the
+// aggregator API keys. The Worker URL is built in (EXCHANGE_WORKER_URL at build time overrides it, e.g. a local
+// `wrangler dev`); fixed paths only, and a longer timeout than the ARK API calls because aggregator quotes and
+// order creation can take a while.
+
+const EXCHANGE_WORKER: &str = match option_env!("EXCHANGE_WORKER_URL") {
+    Some(u) => u,
+    None => "https://xc.geops.net",
+};
+
+fn drain_client() -> Result<reqwest::Client, String> {
+    static CLIENT: std::sync::OnceLock<reqwest::Client> = std::sync::OnceLock::new();
+    if let Some(c) = CLIENT.get() {
+        return Ok(c.clone());
+    }
+    let c = reqwest::Client::builder()
+        .connect_timeout(Duration::from_secs(10))
+        .timeout(Duration::from_secs(120))
+        .user_agent("ark-wallet-desktop/0.1")
+        .build()
+        .map_err(|e| e.to_string())?;
+    Ok(CLIENT.get_or_init(|| c).clone())
+}
+
+#[tauri::command]
+async fn exchange_post(path: String, body: Value) -> Result<HttpResponse, String> {
+    if !matches!(path.as_str(), "/health" | "/quote" | "/order") {
+        return Err("Unknown exchange call".into());
+    }
+    let base = EXCHANGE_WORKER.trim_end_matches('/');
+    let url = reqwest::Url::parse(base).map_err(|_| "The exchange service URL is not valid".to_string())?;
+    let local = matches!(url.host_str(), Some("localhost") | Some("127.0.0.1") | Some("[::1]"));
+    if !(url.scheme() == "https" || (url.scheme() == "http" && local)) {
+        return Err("The exchange service must use https".into());
+    }
+    let resp = drain_client()?.post(format!("{base}{path}")).json(&body).send().await.map_err(net_err)?;
+    finish(resp).await
+}
+
+/// EIP-55 check for a 0x address: "invalid", "unchecked" (all one case, so no checksum to verify),
+/// "ok" (mixed case and the checksum matches) or "bad-checksum" (mixed case with a typo somewhere).
+#[tauri::command]
+fn evm_address_check(address: String) -> &'static str {
+    crypto::evm_address_check(address.trim())
+}
+
 // ---------- Local state (wallet collection + settings; never secrets) ----------
 
 fn state_path(app: &tauri::AppHandle) -> Result<PathBuf, String> {
@@ -237,6 +284,8 @@ pub fn run() {
             address_from_public_key,
             http_get,
             http_post,
+            exchange_post,
+            evm_address_check,
             load_state,
             save_state
         ])

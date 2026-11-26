@@ -3,3 +3,6 @@ dist/
 .DS_Store
 .claude/
 /build/
+
+# Exchange Worker lives in its own private repo (~/Projects/ark-exchange-worker)
+worker/

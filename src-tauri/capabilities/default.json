@@ -15,7 +15,21 @@
         },
         {
           "url": "https://test.arkscan.io/*"
-        }
+        },
+        { "url": "https://changelly.com/*" },
+        { "url": "https://changenow.io/*" },
+        { "url": "https://simpleswap.io/*" },
+        { "url": "https://stealthex.io/*" },
+        { "url": "https://trocador.app/*" },
+        { "url": "https://exchange.flashift.app" },
+        { "url": "https://exchange.flashift.app/*" },
+        { "url": "https://polygonscan.com/*" },
+        { "url": "https://basescan.org/*" },
+        { "url": "https://etherscan.io/*" },
+        { "url": "https://arbiscan.io/*" },
+        { "url": "https://optimistic.etherscan.io/*" },
+        { "url": "https://bscscan.com/*" },
+        { "url": "https://snowtrace.io/*" }
       ]
     },
     "clipboard-manager:allow-write-text",

@@ -11,6 +11,8 @@ import {
   type NetworkId,
   type PersistedState,
   type Settings,
+  type DrainRecord,
+  type PayoutAddress,
   type ApiTransaction,
   type WalletData,
   type WalletEntry,
@@ -47,6 +49,7 @@ class AppState {
   loaded = $state(false);
   wallets = $state<WalletEntry[]>([]);
   settings = $state<Settings>({ ...DEFAULT_SETTINGS });
+  drains = $state<DrainRecord[]>([]);
   #view = $state<View>({ name: "dashboard" });
   /** Panels visited before the current one, oldest first (for Back). */
   #history: View[] = [];
@@ -134,6 +137,21 @@ class AppState {
       if (s && s.wallets) {
         this.wallets = s.wallets;
         this.settings = { ...DEFAULT_SETTINGS, ...s.settings, apiUrls: { ...(s.settings?.apiUrls ?? {}) } };
+        this.drains = Array.isArray(s.drains) ? s.drains : [];
+        // the prototype's single Worker setting becomes the first named payout address
+        const old = (this.settings as any).drain;
+        if (old) {
+          if (old.payoutAddress && !this.settings.payoutAddresses?.length)
+            this.settings.payoutAddresses = [{ id: crypto.randomUUID(), name: "Payout", coin: "usdc", network: "polygon", address: old.payoutAddress }];
+          delete (this.settings as any).drain;
+          this.persist();
+        }
+        // address book entries from before networks were stored with them were Polygon
+        for (const p of this.settings.payoutAddresses ?? []) {
+          if (!p.network) p.network = "polygon";
+          if (!p.coin) p.coin = "usdc"; // entries from before USDT were USDC
+        }
+        delete (this.settings as any).exchangeNetwork;
         // give older wallets distinct colors once
         let assigned = false;
         for (const w of this.wallets) {
@@ -231,6 +249,7 @@ class AppState {
       version: 1,
       wallets: $state.snapshot(this.wallets),
       settings: $state.snapshot(this.settings),
+      drains: $state.snapshot(this.drains),
     };
     try {
       await backend.saveState(state);
@@ -394,6 +413,50 @@ class AppState {
   setTxPageSize(n: number) {
     if (TX_PAGE_SIZES.includes(n) && this.settings.txPageSize !== n) {
       this.settings.txPageSize = n;
+      this.persist();
+    }
+  }
+
+  get payoutAddresses(): PayoutAddress[] {
+    return this.settings.payoutAddresses ?? [];
+  }
+  addPayoutAddress(name: string, coin: string, network: string, address: string): PayoutAddress {
+    const p = { id: crypto.randomUUID(), name: name.trim(), coin, network, address: address.trim() };
+    this.settings.payoutAddresses = [...this.payoutAddresses, p];
+    this.persist();
+    return p;
+  }
+  updatePayoutAddress(id: string, patch: Partial<Omit<PayoutAddress, "id">>) {
+    const p = this.payoutAddresses.find((x) => x.id === id);
+    if (p) {
+      Object.assign(p, patch);
+      this.persist();
+    }
+  }
+  removePayoutAddress(id: string) {
+    this.settings.payoutAddresses = this.payoutAddresses.filter((x) => x.id !== id);
+    if (this.settings.lastPayoutId === id) delete this.settings.lastPayoutId;
+    this.persist();
+  }
+  setLastPayout(id: string) {
+    if (this.settings.lastPayoutId !== id) {
+      this.settings.lastPayoutId = id;
+      this.persist();
+    }
+  }
+  addDrain(r: DrainRecord) {
+    this.drains = [r, ...this.drains].slice(0, 200);
+    this.persist();
+  }
+  /** Forget the exchange history of one wallet (the orders themselves are unaffected). */
+  clearDrains(walletId: string) {
+    this.drains = this.drains.filter((d) => d.walletId !== walletId);
+    this.persist();
+  }
+  updateDrain(id: string, patch: Partial<DrainRecord>) {
+    const r = this.drains.find((x) => x.id === id);
+    if (r) {
+      Object.assign(r, patch);
       this.persist();
     }
   }

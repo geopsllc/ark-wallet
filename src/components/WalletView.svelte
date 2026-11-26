@@ -8,6 +8,7 @@
   import VotePanel from "./VotePanel.svelte";
   import MessageTools from "./MessageTools.svelte";
   import AdvancedPanel from "./AdvancedPanel.svelte";
+  import DrainPanel from "./DrainPanel.svelte";
   import Modal from "./Modal.svelte";
   import WalletName from "./WalletName.svelte";
   import { app } from "../lib/state.svelte";
@@ -17,7 +18,7 @@
 
   let { wallet }: { wallet: WalletEntry } = $props();
 
-  type Tab = "tx" | "send" | "vote" | "message" | "advanced";
+  type Tab = "tx" | "send" | "drain" | "vote" | "message" | "advanced";
   let tab = $state<Tab>("tx");
   let editing = $state(false);
   let newName = $state("");
@@ -46,13 +47,15 @@
     editing = false;
   }
 
-  const tabs: { id: Tab; label: string; icon: string }[] = [
+  // the Exchange tab (ARK -> USDC) is mainnet only
+  const tabs = $derived<{ id: Tab; label: string; icon: string }[]>([
     { id: "tx", label: "Transactions", icon: "list" },
     { id: "send", label: "Send", icon: "send" },
+    ...(wallet.network === "mainnet" ? [{ id: "drain" as Tab, label: "Exchange", icon: "swap" }] : []),
     { id: "vote", label: "Vote", icon: "vote" },
     { id: "message", label: "Sign / Verify", icon: "message" },
     { id: "advanced", label: "Delegate & Security", icon: "shield" },
-  ];
+  ]);
 </script>
 
 <div class="stack page">
@@ -129,6 +132,7 @@
     {#key wallet.id}
       {#if tab === "tx"}<TransactionList {wallet} />
       {:else if tab === "send"}<SendForm {wallet} />
+      {:else if tab === "drain" && wallet.network === "mainnet"}<DrainPanel {wallet} />
       {:else if tab === "vote"}<VotePanel {wallet} />
       {:else if tab === "message"}<MessageTools {wallet} />
       {:else}<AdvancedPanel {wallet} />{/if}

@@ -237,3 +237,50 @@ mod tests {
         assert!(verify_any(&msg, &e, &kp.public));
     }
 }
+
+/// EIP-55 mixed-case checksum check for an Ethereum-style (Polygon) address.
+pub fn evm_address_check(address: &str) -> &'static str {
+    use sha3::{Digest, Keccak256};
+    let Some(hex_part) = address.strip_prefix("0x") else { return "invalid" };
+    if hex_part.len() != 40 || !hex_part.bytes().all(|b| b.is_ascii_hexdigit()) {
+        return "invalid";
+    }
+    let has_upper = hex_part.bytes().any(|b| b.is_ascii_uppercase());
+    let has_lower = hex_part.bytes().any(|b| b.is_ascii_lowercase());
+    if !(has_upper && has_lower) {
+        return "unchecked";
+    }
+    let lower = hex_part.to_ascii_lowercase();
+    let hash = Keccak256::digest(lower.as_bytes());
+    for (i, c) in hex_part.chars().enumerate() {
+        if c.is_ascii_alphabetic() {
+            let nibble = (hash[i / 2] >> if i % 2 == 0 { 4 } else { 0 }) & 0x0f;
+            if (nibble >= 8) != c.is_ascii_uppercase() {
+                return "bad-checksum";
+            }
+        }
+    }
+    "ok"
+}
+
+#[cfg(test)]
+mod evm_tests {
+    use super::evm_address_check;
+
+    #[test]
+    fn eip55() {
+        // examples from the EIP-55 spec
+        for a in [
+            "0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed",
+            "0xfB6916095ca1df60bB79Ce92cE3Ea74c37c5d359",
+            "0xdbF03B407c01E7cD3CBea99509d93f8DDDC8C6FB",
+            "0xD1220A0cf47c7B9Be7A2E6BA89F429762e7b9aDb",
+        ] {
+            assert_eq!(evm_address_check(a), "ok", "{a}");
+        }
+        assert_eq!(evm_address_check("0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAeD"), "bad-checksum");
+        assert_eq!(evm_address_check("0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed"), "unchecked");
+        assert_eq!(evm_address_check("0x5aaeb6053f3e94c9b9a09f33669435e7ef1beae"), "invalid");
+        assert_eq!(evm_address_check("5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed"), "invalid");
+    }
+}
