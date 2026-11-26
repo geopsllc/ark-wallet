@@ -109,6 +109,22 @@
     </div>
     <div class="line">
       <div>
+        <div>Include delegate wallets in totals</div>
+        <div class="muted small">
+          Off by default: a delegate's balance is usually shared out to its voters, so it isn't really yours. Affects the
+          portfolio total on the dashboard and in the sidebar.
+        </div>
+      </div>
+      <button
+        class="switch"
+        role="switch"
+        aria-checked={!!app.settings.includeDelegates}
+        aria-label="Include delegate wallets in totals"
+        onclick={() => app.setIncludeDelegates(!app.settings.includeDelegates)}
+      ><span></span></button>
+    </div>
+    <div class="line">
+      <div>
         <div>Full refresh every</div>
         <div class="muted small">
           New blocks are checked every 8 s and wallets update as soon as a transaction touches them; this is an extra
@@ -150,5 +166,39 @@
     align-items: center;
     justify-content: space-between;
     gap: 20px;
+  }
+  .switch {
+    flex-shrink: 0;
+    width: 40px;
+    height: 22px;
+    border-radius: 11px;
+    border: 1px solid var(--border-strong);
+    background: rgba(255, 255, 255, 0.08);
+    padding: 0;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .switch span {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--muted);
+    transition: transform 0.15s, background 0.15s;
+  }
+  .switch[aria-checked="true"] {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+  }
+  .switch[aria-checked="true"] span {
+    transform: translateX(18px);
+    background: var(--accent);
+  }
+  .switch:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
   }
 </style>

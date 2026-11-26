@@ -61,6 +61,8 @@ export interface Settings {
   sidebarWidth?: number;
   /** Rows per page in transaction tables (25 / 50 / 100) */
   txPageSize?: number;
+  /** Count delegate wallets in the portfolio total (off by default: their balance is shared out to voters) */
+  includeDelegates?: boolean;
 }
 
 export interface PersistedState {

@@ -33,12 +33,12 @@
   </div>
   <div class="top">
     <div class="card portfolio">
-      <div class="muted small one" title="Mainnet wallets, excluding delegate wallets">Total balance</div>
+      <div class="muted small one" title={app.settings.includeDelegates ? "Mainnet wallets, including delegate wallets" : "Mainnet wallets, excluding delegate wallets"}>Total balance</div>
       <div class="big num">{formatArk(totalArk, 4, 2)}<Sym /></div>
       <div class="fiat num">{totalFiat !== null ? formatFiat(totalFiat, cur) : "—"}</div>
       {#if delegateArk > 0n}
-        <div class="faint small num one" title="Delegate balances are paid out to voters, so they're kept out of the total">
-          Excludes {formatArk(delegateArk, 2, 2)}<Sym /> in delegates
+        <div class="faint small num one" title="Change this in Settings → General">
+          {app.settings.includeDelegates ? "Includes" : "Excludes"} {formatArk(delegateArk, 2, 2)}<Sym /> in delegates
         </div>
       {/if}
       <div class="meta">

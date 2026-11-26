@@ -358,12 +358,14 @@ class AppState {
     }
   }
 
-  /** Wallets counted in the portfolio total: mainnet, and not delegates (their balance is shared out to voters). */
   isDelegate(w: WalletEntry): boolean {
     return !!this.data[w.address]?.delegate;
   }
+  /** Wallets counted in the portfolio total: mainnet, and delegates only when the setting says so
+   *  (by default they're left out, because a delegate's balance is shared out to voters). */
   get portfolioWallets(): WalletEntry[] {
-    return this.wallets.filter((w) => w.network === "mainnet" && !this.isDelegate(w));
+    const all = this.settings.includeDelegates;
+    return this.wallets.filter((w) => w.network === "mainnet" && (all || !this.isDelegate(w)));
   }
   get portfolioArk(): bigint {
     return this.portfolioWallets.reduce((s, w) => s + BigInt(this.data[w.address]?.balance ?? "0"), 0n);
@@ -392,6 +394,13 @@ class AppState {
   setTxPageSize(n: number) {
     if (TX_PAGE_SIZES.includes(n) && this.settings.txPageSize !== n) {
       this.settings.txPageSize = n;
+      this.persist();
+    }
+  }
+
+  setIncludeDelegates(on: boolean) {
+    if (!!this.settings.includeDelegates !== on) {
+      this.settings.includeDelegates = on;
       this.persist();
     }
   }
