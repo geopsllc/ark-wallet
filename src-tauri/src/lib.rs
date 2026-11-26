@@ -1,4 +1,5 @@
 pub mod crypto;
+pub mod mainsail;
 pub mod tx;
 
 use serde::Serialize;
@@ -85,6 +86,72 @@ fn address_from_public_key(public_key: String, network: u8) -> Result<String, St
     let pk = hex::decode(public_key.trim()).map_err(|_| "Public key is not valid hex")?;
     k256::PublicKey::from_sec1_bytes(&pk).map_err(|_| "Invalid public key")?;
     Ok(crypto::address_from_public_key(&pk, network))
+}
+
+// ---------- Mainsail (ARK on an EVM; see mainsail.rs) ----------
+
+#[tauri::command]
+fn ms_derive_wallet(mut passphrase: String) -> Result<DerivedWallet, String> {
+    let kp = crypto::KeyPair::from_passphrase(passphrase.trim());
+    passphrase.zeroize();
+    let kp = kp?;
+    Ok(DerivedWallet { address: mainsail::address_from_public_key(&kp.public)?, public_key: kp.public_hex() })
+}
+
+#[tauri::command]
+fn ms_validate_address(address: String) -> bool {
+    mainsail::parse_address(&address).is_ok()
+}
+
+/// EIP-55 form of each address (None where one is not a valid 0x address or fails its checksum).
+#[tauri::command]
+fn ms_checksum_addresses(addresses: Vec<String>) -> Vec<Option<String>> {
+    addresses.iter().map(|a| mainsail::parse_address(a).ok().map(|raw| mainsail::checksum(&raw))).collect()
+}
+
+#[tauri::command]
+fn ms_address_from_public_key(public_key: String) -> Result<String, String> {
+    let pk = hex::decode(public_key.trim()).map_err(|_| "Public key is not valid hex")?;
+    mainsail::address_from_public_key(&pk)
+}
+
+/// What a transaction would call (no keys): for the gas estimate.
+#[tauri::command]
+fn ms_describe_call(request: mainsail::CallRequest) -> Result<mainsail::Call, String> {
+    mainsail::describe_call(request)
+}
+
+#[tauri::command]
+fn ms_build_transaction(mut request: mainsail::BuildRequest) -> Result<mainsail::SignedTx, String> {
+    mainsail::build_and_sign(&mut request)
+}
+
+#[tauri::command]
+fn ms_validator_public_key(mut passphrase: String) -> Result<String, String> {
+    let r = mainsail::validator_public_key(&passphrase);
+    passphrase.zeroize();
+    r
+}
+
+#[tauri::command]
+fn ms_sign_message(message: String, mut passphrase: String, expected_address: String) -> Result<SignedMessage, String> {
+    let kp = crypto::KeyPair::from_passphrase(passphrase.trim());
+    passphrase.zeroize();
+    let kp = kp?;
+    if !mainsail::address_from_public_key(&kp.public)?.eq_ignore_ascii_case(expected_address.trim()) {
+        return Err("This passphrase does not belong to this wallet".into());
+    }
+    if crypto::looks_like_secret(&message, &[&kp.public]) {
+        return Err("The message looks like a passphrase. Signed messages are meant to be shared, so it was not signed.".into());
+    }
+    let signature = mainsail::sign_message(&kp, &message)?;
+    Ok(SignedMessage { message, public_key: kp.public_hex(), signature })
+}
+
+/// `signer` is a public key or a 0x address.
+#[tauri::command]
+fn ms_verify_message(message: String, signer: String, signature: String) -> Result<bool, String> {
+    mainsail::verify_message(&message, &signer, &signature)
 }
 
 // ---------- HTTP (done in Rust to avoid CORS issues with custom nodes) ----------
@@ -286,6 +353,15 @@ pub fn run() {
             http_post,
             exchange_post,
             evm_address_check,
+            ms_derive_wallet,
+            ms_validate_address,
+            ms_checksum_addresses,
+            ms_address_from_public_key,
+            ms_describe_call,
+            ms_build_transaction,
+            ms_validator_public_key,
+            ms_sign_message,
+            ms_verify_message,
             load_state,
             save_state
         ])

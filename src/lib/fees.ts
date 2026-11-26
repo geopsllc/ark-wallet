@@ -3,7 +3,7 @@ import type { TxKind } from "./types";
 import { utf8Length } from "./format";
 
 /** API / config key for each transaction kind */
-export const FEE_KEY: Record<TxKind, string> = {
+export const FEE_KEY: Partial<Record<TxKind, string>> = {
   transfer: "transfer",
   multipayment: "multiPayment",
   vote: "vote",
@@ -67,7 +67,7 @@ export interface FeeOptions {
  * The node requires fee >= this for both pool entry (minFeePool) and broadcast (minFeeBroadcast).
  */
 export function feeOptions(cfg: NodeFeeConfig, p: SizeParams): FeeOptions {
-  const key = FEE_KEY[p.kind];
+  const key = FEE_KEY[p.kind] ?? p.kind;
   const size = txSize(p);
   const staticFee = BigInt(cfg.staticFees[key] ?? "10000000");
   let min: bigint;

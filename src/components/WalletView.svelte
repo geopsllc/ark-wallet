@@ -8,11 +8,12 @@
   import VotePanel from "./VotePanel.svelte";
   import MessageTools from "./MessageTools.svelte";
   import AdvancedPanel from "./AdvancedPanel.svelte";
+  import ValidatorPanel from "./ValidatorPanel.svelte";
   import DrainPanel from "./DrainPanel.svelte";
   import Modal from "./Modal.svelte";
   import WalletName from "./WalletName.svelte";
   import { app } from "../lib/state.svelte";
-  import { openExternal } from "../lib/backend";
+  import { copyText, openExternal } from "../lib/backend";
   import { formatArk, formatFiat } from "../lib/format";
   import { NETWORKS, type WalletEntry } from "../lib/types";
 
@@ -47,14 +48,24 @@
     editing = false;
   }
 
-  // the Exchange tab (ARK -> USDC) is mainnet only
+  const Who = $derived(net.producer === "validator" ? "Validator" : "Delegate");
+
+  /** Test networks: the faucet is a web page (it has a captcha), so copy the address and open it */
+  async function faucet() {
+    if (!net.faucet) return;
+    await copyText(wallet.address);
+    openExternal(net.faucet);
+    app.toast("info", `Address copied: paste it on the faucet page to get test ${net.token}`);
+  }
+
+  // the Exchange tab (ARK -> USDC) is mainnet only: never on test networks
   const tabs = $derived<{ id: Tab; label: string; icon: string }[]>([
     { id: "tx", label: "Transactions", icon: "list" },
     { id: "send", label: "Send", icon: "send" },
     ...(wallet.network === "mainnet" ? [{ id: "drain" as Tab, label: "Exchange", icon: "swap" }] : []),
     { id: "vote", label: "Vote", icon: "vote" },
     { id: "message", label: "Sign / Verify", icon: "message" },
-    { id: "advanced", label: "Delegate & Security", icon: "shield" },
+    { id: "advanced", label: net.family === "mainsail" ? "Validator & Username" : "Delegate & Security", icon: "shield" },
   ]);
 </script>
 
@@ -78,7 +89,8 @@
         <button class="btn ghost icon" title="Rename" onclick={startEdit}><Icon name="edit" size={14} /></button>
       {/if}
       <span class="badge" class:brand={wallet.network === "mainnet"} class:warn={wallet.network !== "mainnet"}>{net.name}</span>
-      {#if d?.delegate}<span class="badge brand">Delegate · {d.delegate.username}</span>{/if}
+      {#if d?.delegate}<span class="badge brand">{Who}{d.delegate.username ? ` · ${d.delegate.username}` : ""}</span>
+      {:else if d?.username}<span class="badge">@{d.username}</span>{/if}
       {#if d?.secondPublicKey}<span class="badge green"><Icon name="key" size={11} /> 2nd passphrase</span>{/if}
       {#if d?.coldWallet}<span class="badge" title="No outgoing transactions yet; public key unknown to the network">Cold wallet</span>{/if}
       <span class="spacer"></span>
@@ -113,6 +125,11 @@
         {/if}
       </div>
       <div class="actions">
+        {#if net.faucet}
+          <button class="btn" title="Opens the {net.name} faucet in your browser, with this address copied" onclick={faucet}>
+            <Icon name="external" size={14} /> Get test {net.token}
+          </button>
+        {/if}
         <button class="btn primary" onclick={() => (tab = "send")}><Icon name="send" size={14} /> Send</button>
         <button class="btn" onclick={() => (tab = "vote")}><Icon name="vote" size={14} /> Vote</button>
       </div>
@@ -135,6 +152,7 @@
       {:else if tab === "drain" && wallet.network === "mainnet"}<DrainPanel {wallet} />
       {:else if tab === "vote"}<VotePanel {wallet} />
       {:else if tab === "message"}<MessageTools {wallet} />
+      {:else if net.family === "mainsail"}<ValidatorPanel {wallet} />
       {:else}<AdvancedPanel {wallet} />{/if}
     {/key}
   </div>
@@ -216,6 +234,7 @@
     min-height: 18px;
   }
   .vote-box {
+    flex-shrink: 0;
     display: flex;
     flex-direction: column;
     align-items: flex-end;
@@ -225,6 +244,7 @@
     background: none;
     border: none;
     padding: 0;
+    white-space: nowrap;
     font-weight: 600;
     font-size: 14px;
   }

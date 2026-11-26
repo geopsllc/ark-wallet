@@ -26,6 +26,8 @@ sha3 = "0.10"
 ripemd = "0.1"
 bs58 = { version = "0.5", features = ["check"] }
 bip39 = { version = "2", features = ["rand"] }
+# Mainsail validator keys (BLS12-381, EIP-2333); "portable" keeps release builds runnable on older x86 CPUs
+blst = { version = "0.3", features = ["portable"] }
 hex = "0.4"
 zeroize = "1"
 reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }

@@ -80,7 +80,7 @@
       >
         <div class="row" style="gap:8px">
           <span class="wname"><WalletName wallet={w} size="sm" /></span>
-          {#if w.network !== "mainnet"}<span class="badge warn">{NETWORKS[w.network].name}</span>{/if}
+          {#if w.network !== "mainnet"}<span class="badge warn" title={NETWORKS[w.network].name}>{NETWORKS[w.network].badge}</span>{/if}
           <span class="spacer"></span>
           {#if app.loading[w.address] && !d}<span class="spinner" style="width:10px;height:10px"></span>{/if}
           {#if app.errors[w.address]}<span class="red" title={app.errors[w.address]}>!</span>{/if}

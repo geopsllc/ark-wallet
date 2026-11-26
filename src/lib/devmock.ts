@@ -34,8 +34,13 @@ export function installDevMock() {
         if (!/^0x[0-9a-fA-F]{40}$/.test(a)) return "invalid";
         return /[a-f]/.test(a.slice(2)) && /[A-F]/.test(a.slice(2)) ? "ok" : "unchecked";
       }
-      case "http_post":
-        throw new Error("Broadcasting is disabled in browser preview");
+      case "http_post": {
+        // read-only JSON-RPC (gas estimates, contract reads) works; broadcasting does not
+        if (!/\/rpc\b/.test(args.url) || ["eth_sendRawTransaction"].includes(args.body?.method))
+          throw new Error("Broadcasting is disabled in browser preview");
+        const r = await fetch(args.url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(args.body) });
+        return { status: r.status, body: await r.json().catch(() => null), retryAfter: null };
+      }
       case "load_state": {
         const s = localStorage.getItem(KEY);
         return s ? JSON.parse(s) : null;
@@ -50,6 +55,15 @@ export function installDevMock() {
         return Array.from({ length: args.words }, (_, i) => ["abandon", "ability", "able", "about"][i % 4]).join(" ");
       case "derive_wallet":
         return { address: "AKdr5d9AMEnsKYxpDcoHdyyjSCKVx3r9Nj", publicKey: "02" + "0".repeat(64) };
+      // Mainsail: no keccak / secp256k1 in the preview, so placeholders (the app does these in Rust)
+      case "ms_checksum_addresses":
+        return (args.addresses as string[]).map((x) => (/^0x[0-9a-fA-F]{40}$/.test(x.trim()) ? x.trim() : null));
+      case "ms_derive_wallet":
+        return { address: "0x91D0eAEe8958e97F98Bc76D9A14004d90130a8c4", publicKey: "02" + "0".repeat(64) };
+      case "ms_validator_public_key":
+        return "a1" + "0".repeat(94);
+      case "ms_describe_call":
+        return { to: args.request.recipientId ?? "0x535B3D7A252fa034Ed71F0C53ec0C6F784cB64E1", value: "0", data: "0x" };
       case "plugin:opener|open_url":
         window.open(args.url, "_blank");
         return null;

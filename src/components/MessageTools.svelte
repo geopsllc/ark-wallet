@@ -7,6 +7,7 @@
 
   let { wallet }: { wallet: WalletEntry } = $props();
   const net = $derived(NETWORKS[wallet.network]);
+  const evm = $derived(net.family === "mainsail");
 
   let mode = $state<"sign" | "verify">("sign");
 
@@ -22,7 +23,9 @@
     signed = null;
     busy = true;
     try {
-      signed = await backend.signMessage(message, passphrase, wallet.address, net.pubKeyHash);
+      signed = evm
+        ? await backend.msSignMessage(message, passphrase, wallet.address)
+        : await backend.signMessage(message, passphrase, wallet.address, net.pubKeyHash);
       passphrase = "";
     } catch (e: any) {
       signError = String(e?.message ?? e);
@@ -46,7 +49,7 @@
     try {
       const o = JSON.parse(vJson);
       vMessage = o.message ?? "";
-      vKey = o.publicKey ?? o.publickey ?? "";
+      vKey = o.publicKey ?? o.publickey ?? (evm ? o.address ?? "" : "");
       vSig = o.signature ?? "";
     } catch {
       vError = "That is not valid JSON";
@@ -57,10 +60,12 @@
     vError = "";
     vResult = null;
     try {
-      const ok = await backend.verifyMessage(vMessage, vKey, vSig);
+      const key = vKey.trim();
+      const ok = evm ? await backend.msVerifyMessage(vMessage, key, vSig.trim()) : await backend.verifyMessage(vMessage, key, vSig);
       let address: string | undefined;
       try {
-        address = await backend.addressFromPublicKey(vKey, net.pubKeyHash);
+        if (evm) address = key.startsWith("0x") && key.length === 42 ? key : await backend.msAddressFromPublicKey(key);
+        else address = await backend.addressFromPublicKey(key, net.pubKeyHash);
       } catch {}
       vResult = { ok, address };
     } catch (e: any) {
@@ -76,7 +81,7 @@
   </div>
 
   {#if mode === "sign"}
-    <p class="muted small" style="margin:0">Prove you control <span class="mono">{wallet.address}</span> by signing a message. Signing is free and nothing is sent to the network.</p>
+    <p class="muted small" style="margin:0">Prove you control <span class="mono">{wallet.address}</span> by signing a message. Signing is free and nothing is sent to the network.{#if evm} The signature is Ethereum-style (EIP-191), so EVM tools can check it too.{/if}</p>
     <label class="field">Message<textarea bind:value={message} rows="3" placeholder="Text to sign"></textarea></label>
     <label class="field">Passphrase<SecretInput bind:value={passphrase} /></label>
     {#if signError}<div class="notice error">{signError}</div>{/if}
@@ -96,7 +101,7 @@
       <textarea bind:value={vJson} rows="4" class="mono" placeholder={'{ "message": "...", "publicKey": "...", "signature": "..." }'} oninput={parseJson}></textarea>
     </label>
     <label class="field">Message<textarea bind:value={vMessage} rows="2"></textarea></label>
-    <label class="field">Public key<input bind:value={vKey} class="mono" spellcheck="false" /></label>
+    <label class="field">{evm ? "Public key or address" : "Public key"}<input bind:value={vKey} class="mono" spellcheck="false" /></label>
     <label class="field">Signature<input bind:value={vSig} class="mono" spellcheck="false" /></label>
     {#if vError}<div class="notice error">{vError}</div>{/if}
     <div class="row">
@@ -108,7 +113,7 @@
         {#if vResult.ok}
           Valid signature{vResult.address ? ` from ${vResult.address}` : ""}.
         {:else}
-          The signature does NOT match this message and public key.
+          The signature does NOT match this message and {evm ? "signer" : "public key"}.
         {/if}
       </div>
     {/if}

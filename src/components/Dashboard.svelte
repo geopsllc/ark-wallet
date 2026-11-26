@@ -93,8 +93,13 @@
         <button class="card wcard" style="--wc:{walletColor(w)}" onclick={() => (app.view = { name: "wallet", id: w.id })}>
           <div class="row">
             <span class="wn"><WalletName wallet={w} /></span>
-            {#if w.network !== "mainnet"}<span class="badge warn">{NETWORKS[w.network].name}</span>{/if}
-            {#if d?.delegate}<span class="badge brand">Delegate</span>{/if}
+            {#if w.network !== "mainnet"}<span class="badge warn" title={NETWORKS[w.network].name}>{NETWORKS[w.network].badge}</span>{/if}
+            {#if d?.delegate}
+              {@const role = NETWORKS[w.network].producer === "validator" ? "Validator" : "Delegate"}
+              <!-- next to the network badge there is only room for an icon -->
+              {#if w.network !== "mainnet"}<span class="badge brand" title={role}><Icon name="star" size={11} /></span>
+              {:else}<span class="badge brand">{role}</span>{/if}
+            {/if}
           </div>
           <div class="faint small"><Address address={w.address} /></div>
           <div class="wb num">{d ? formatArk(d.balance, 4, 2) : "…"}<Sym network={w.network} /></div>

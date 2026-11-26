@@ -5,7 +5,7 @@
   import ConfirmTx from "./ConfirmTx.svelte";
   import Icon from "./Icon.svelte";
   import { app } from "../lib/state.svelte";
-  import { ark } from "../lib/ark";
+  import { chain, sameAddress } from "../lib/chain";
   import { openExternal } from "../lib/backend";
   import { formatArk, shortAddress } from "../lib/format";
   import { NETWORKS, type Delegate, type TxDraft, type WalletEntry } from "../lib/types";
@@ -15,6 +15,12 @@
   const net = $derived(NETWORKS[wallet.network]);
   const data = $derived(app.data[wallet.address]);
   const votedKey = $derived(data?.vote ?? null);
+  const evm = $derived(net.family === "mainsail");
+  /** active forging / validating set: 51 delegates on Core, 53 validators on Mainsail; one page shows all of them */
+  const active = $derived(net.activeProducers);
+  const who = $derived(net.producer);
+  const Who = $derived(who[0].toUpperCase() + who.slice(1));
+  const isMine = (key: string) => (evm ? sameAddress(key, votedKey) : key === votedKey);
 
   let current = $state<Delegate | null>(null);
   let list = $state<Delegate[]>([]);
@@ -29,14 +35,14 @@
   $effect(() => {
     const key = votedKey;
     current = null;
-    if (key) ark.delegate(app.apiUrl(wallet.network), key).then((d) => (current = d)).catch(() => {});
+    if (key) chain(wallet.network).delegate(app.apiUrl(wallet.network), key).then((d) => (current = d)).catch(() => {});
   });
 
   async function load() {
     loading = true;
     error = "";
     try {
-      const r = await ark.delegates(app.apiUrl(wallet.network), page, search);
+      const r = await chain(wallet.network).delegates(app.apiUrl(wallet.network), page, search, active);
       list = r.data;
       pageCount = r.pageCount;
     } catch (e: any) {
@@ -63,19 +69,20 @@
   const balanceText = $derived(`${formatArk(data?.balance ?? "0")} ${net.token}`);
 
   function vote(d: Delegate) {
-    const switching = votedKey && votedKey !== d.publicKey;
-    const votes = switching ? [`-${votedKey}`, `+${d.publicKey}`] : [`+${d.publicKey}`];
+    const switching = votedKey && !isMine(d.publicKey);
+    // Mainsail switches with a single vote() call
+    const votes = switching && !evm ? [`-${votedKey}`, `+${d.publicKey}`] : [`+${d.publicKey}`];
     draft = {
       kind: "vote",
       title: switching ? "Switch vote" : "Vote",
       summary: switching
         ? [
             ["Unvote", current ? `${current.username}` : shortAddress(votedKey!, 8)],
-            ["Vote for", `${d.username} (rank ${d.rank})`],
+            ["Vote for", `${d.username || shortAddress(d.address, 8)} (rank ${d.rank})`],
             ["Voting weight", balanceText],
           ]
         : [
-            ["Vote for", `${d.username} (rank ${d.rank})`],
+            ["Vote for", `${d.username || shortAddress(d.address, 8)} (rank ${d.rank})`],
             ["Voting weight", balanceText],
           ],
       fields: { votes },
@@ -89,7 +96,7 @@
       kind: "vote",
       title: "Unvote",
       summary: [["Unvote", current ? current.username : shortAddress(votedKey, 8)]],
-      fields: { votes: [`-${votedKey}`] },
+      fields: { votes: evm ? ["-"] : [`-${votedKey}`] },
       total: 0n,
     };
   }
@@ -108,9 +115,9 @@
           <div class="muted small">Currently voting for</div>
           {#if current}
             <div class="row" style="gap:10px">
-              <span class="dname">{current.username}</span>
+              <span class="dname">{current.username || shortAddress(current.address, 8)}</span>
               {#if current.isResigned}<span class="badge red">Resigned</span>
-              {:else if current.rank <= 51}<span class="badge green">Active · #{current.rank}</span>
+              {:else if current.rank && current.rank <= active}<span class="badge green">Active · #{current.rank}</span>
               {:else}<span class="badge warn">Standby · #{current.rank}</span>{/if}
             </div>
             <div class="faint small mono">{current.address}</div>
@@ -125,9 +132,9 @@
         {/if}
         <button class="btn danger" onclick={unvote}>Unvote</button>
       </div>
-      {#if current && (current.isResigned || current.rank > 51)}
+      {#if current && (current.isResigned || !current.rank || current.rank > active)}
         <div class="notice warn" style="margin-top:12px">
-          This delegate is {current.isResigned ? "resigned" : "not in the active 51"} and is not forging. Consider switching your vote.
+          This {who} is {current.isResigned ? "resigned" : `not in the active ${active}`} and is not {evm ? "producing blocks" : "forging"}. Consider switching your vote.
         </div>
       {/if}
     {:else}
@@ -135,7 +142,7 @@
         <div class="vicon off"><Icon name="vote" size={20} /></div>
         <div>
           <div style="font-weight:600">Not voting</div>
-          <div class="muted small">Pick a delegate below. Voting is free of risk: your {net.token} never leaves your wallet.</div>
+          <div class="muted small">Pick a {who} below. Voting is free of risk: your {net.token} never leaves your wallet.</div>
         </div>
       </div>
     {/if}
@@ -144,7 +151,7 @@
   <div class="row" style="flex-wrap:wrap; row-gap:8px">
     <div class="search">
       <Icon name="search" size={14} />
-      <input bind:value={search} oninput={onSearch} placeholder="Search delegates" spellcheck="false" autocomplete="off" maxlength="20" />
+      <input bind:value={search} oninput={onSearch} placeholder="Search {who}s" spellcheck="false" autocomplete="off" maxlength="20" />
     </div>
     <span class="spacer"></span>
     {#if loading}<span class="spinner"></span>{/if}
@@ -156,18 +163,19 @@
   <div class="panel tablewrap tablebox">
     <table class="list">
       <thead>
-        <tr><th class="c-rank">Rank</th><th>Delegate</th><th class="right c-votes">Votes</th><th class="right c-appr">Approval</th><th class="right c-act"></th></tr>
+        <tr><th class="c-rank">Rank</th><th>{Who}</th><th class="right c-votes">Votes</th><th class="right c-appr">Approval</th><th class="right c-act"></th></tr>
       </thead>
       <tbody>
         {#each list as d (d.publicKey)}
-          {@const own = app.wallets.find((w) => w.network === wallet.network && w.address === d.address)}
-          <tr class:mine={d.publicKey === votedKey}>
-            <td class="num c-rank" class:faint={d.rank > 51}>{d.rank}</td>
+          {@const own = app.wallets.find((w) => w.network === wallet.network && sameAddress(w.address, d.address))}
+          {@const mine = isMine(d.publicKey)}
+          <tr class:mine>
+            <td class="num c-rank" class:faint={!d.rank || d.rank > active}>{d.rank || "–"}</td>
             <td>
               <div class="row">
-                <span style="font-weight:500">{d.username}</span>
+                <span style="font-weight:500">{d.username || shortAddress(d.address, 8)}</span>
                 {#if d.isResigned}<span class="badge red">Resigned</span>{/if}
-                {#if d.publicKey === votedKey}<span class="badge accent">Your vote</span>{/if}
+                {#if mine}<span class="badge accent">Your vote</span>{/if}
               </div>
               <div class="small muted">
                 <!-- same behaviour as addresses in the transaction list: your own wallet opens its panel, others the explorer -->
@@ -184,7 +192,7 @@
             <td class="right num c-votes">{formatArk(d.votes, 0, 0)}<Sym network={wallet.network} /></td>
             <td class="right num muted c-appr">{pct(d)}</td>
             <td class="right c-act">
-              {#if d.publicKey === votedKey}
+              {#if mine}
                 <button class="btn small danger" onclick={unvote}>Unvote</button>
               {:else if votedKey}
                 <button class="btn small" disabled={d.isResigned} onclick={() => vote(d)}><Icon name="swap" size={13} /> Switch</button>
@@ -194,7 +202,7 @@
             </td>
           </tr>
         {:else}
-          {#if !loading}<tr><td colspan="5" class="muted" style="text-align:center;padding:30px">No delegates found</td></tr>{/if}
+          {#if !loading}<tr><td colspan="5" class="muted" style="text-align:center;padding:30px">No {who}s found</td></tr>{/if}
         {/each}
       </tbody>
     </table>

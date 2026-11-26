@@ -4,6 +4,7 @@
   import SecretInput from "./SecretInput.svelte";
   import CopyButton from "./CopyButton.svelte";
   import Icon from "./Icon.svelte";
+  import ConfirmEvm from "./ConfirmEvm.svelte";
   import { app } from "../lib/state.svelte";
   import { ark, type NodeFeeConfig } from "../lib/ark";
   import { backend, openExternal } from "../lib/backend";
@@ -15,17 +16,22 @@
     wallet,
     draft,
     newSecondPassphrase = "",
+    validatorPassphrase = "",
     onclose,
     ondone,
   }: {
     wallet: WalletEntry;
     draft: TxDraft;
     newSecondPassphrase?: string;
+    /** Mainsail validator key operations */
+    validatorPassphrase?: string;
     onclose: () => void;
     ondone?: (id: string) => void;
   } = $props();
 
   const net = $derived(NETWORKS[wallet.network]);
+  // Mainsail transactions are confirmed by ConfirmEvm (gas, EIP-155 signing)
+  const evm = $derived(net.family === "mainsail");
   const data = $derived(app.data[wallet.address]);
   const hasSecond = $derived(!!data?.secondPublicKey);
 
@@ -40,6 +46,7 @@
   let result = $state<{ id: string; accepted: boolean; message: string } | null>(null);
 
   $effect(() => {
+    if (evm) return;
     ark
       .fees(app.apiUrl(wallet.network))
       .then((c) => (cfg = c))
@@ -121,6 +128,9 @@
   }
 </script>
 
+{#if evm}
+  <ConfirmEvm {wallet} {draft} {validatorPassphrase} {onclose} {ondone} />
+{:else}
 <Modal title={result ? (result.accepted ? "Transaction sent" : "Transaction rejected") : draft.title} {onclose} width={560}>
   {#if result}
     <div class="stack fade">
@@ -241,6 +251,7 @@
     </div>
   {/if}
 </Modal>
+{/if}
 
 <style>
   .summary {
@@ -263,7 +274,7 @@
   }
   .kv .val {
     text-align: right;
-    word-break: break-all;
+    overflow-wrap: anywhere;
   }
   .fee-box {
     display: flex;

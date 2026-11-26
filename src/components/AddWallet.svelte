@@ -4,7 +4,7 @@
   import MnemonicSetup from "./MnemonicSetup.svelte";
   import Icon from "./Icon.svelte";
   import { app } from "../lib/state.svelte";
-  import { backend } from "../lib/backend";
+  import { deriveWallet, invalidAddressText, normalizeAddress } from "../lib/chain";
   import { NETWORKS, type NetworkId } from "../lib/types";
 
   let { onclose }: { onclose: () => void } = $props();
@@ -24,14 +24,14 @@
   let deriveTimer: ReturnType<typeof setTimeout> | undefined;
   $effect(() => {
     const p = passphrase;
-    const n = net.pubKeyHash;
+    const n = network;
     clearTimeout(deriveTimer);
     found = null;
     if (mode !== "passphrase" || !p.trim()) return;
     deriveTimer = setTimeout(async () => {
-      const d = await backend.deriveWallet(p, n).catch(() => null);
+      const d = await deriveWallet(n, p).catch(() => null);
       // only the result for what is in the field now (an older, slower answer would be the wrong address)
-      if (passphrase === p && net.pubKeyHash === n && mode === "passphrase") found = d;
+      if (passphrase === p && network === n && mode === "passphrase") found = d;
     }, 200);
   });
 
@@ -47,9 +47,9 @@
   async function add() {
     error = "";
     if (mode === "address") {
-      const a = address.trim();
-      if (!(await backend.validateAddress(a, net.pubKeyHash))) {
-        error = `Not a valid ${net.name} address (should start with "${net.addressPrefix}")`;
+      const a = await normalizeAddress(network, address);
+      if (!a) {
+        error = invalidAddressText(network);
         return;
       }
       finishAdd(a);
@@ -62,7 +62,7 @@
   }
 
   async function created(mnemonic: string) {
-    const d = await backend.deriveWallet(mnemonic, net.pubKeyHash);
+    const d = await deriveWallet(network, mnemonic);
     finishAdd(d.address, d.publicKey);
   }
 </script>
@@ -82,7 +82,7 @@
           {#each Object.values(NETWORKS) as n}<option value={n.id}>{n.name} ({n.token})</option>{/each}
         </select>
       </label>
-      <label class="field">Name<input bind:value={name} placeholder="{defaultName} (or delegate name)" /></label>
+      <label class="field">Name<input bind:value={name} placeholder="{defaultName} (or {net.producer} name)" /></label>
     </div>
 
     {#if mode === "address"}

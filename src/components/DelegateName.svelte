@@ -1,7 +1,7 @@
 <script lang="ts">
   import Icon from "./Icon.svelte";
   import { app } from "../lib/state.svelte";
-  import { ark } from "../lib/ark";
+  import { chain } from "../lib/chain";
   import { openExternal } from "../lib/backend";
   import { shortAddress } from "../lib/format";
   import type { NetworkId } from "../lib/types";
@@ -13,7 +13,7 @@
   $effect(() => {
     name = "";
     address = "";
-    ark
+    chain(network)
       .delegate(app.apiUrl(network), publicKey)
       .then((d) => {
         name = d.username;

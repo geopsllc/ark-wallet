@@ -9,6 +9,19 @@ export interface HttpResponse {
   retryAfter?: number | null;
 }
 
+export interface MsSignedTx {
+  hash: string;
+  /** signed RLP, hex without 0x: what gets broadcast */
+  serialized: string;
+  from: string;
+  to: string;
+  nonce: string;
+  gasPrice: string;
+  gasLimit: string;
+  value: string;
+  data: string;
+}
+
 export const backend = {
   deriveWallet: (passphrase: string, network: number) =>
     invoke<{ address: string; publicKey: string }>("derive_wallet", { passphrase, network }),
@@ -27,6 +40,19 @@ export const backend = {
     invoke<boolean>("verify_message", { message, publicKey, signature }),
   addressFromPublicKey: (publicKey: string, network: number) =>
     invoke<string>("address_from_public_key", { publicKey, network }),
+  // ---------- Mainsail (EVM) ----------
+  msDeriveWallet: (passphrase: string) => invoke<{ address: string; publicKey: string }>("ms_derive_wallet", { passphrase }),
+  /** EIP-55 checksummed form of each address, or null where one is not a valid 0x address */
+  msChecksum: (addresses: string[]) => invoke<(string | null)[]>("ms_checksum_addresses", { addresses }),
+  msAddressFromPublicKey: (publicKey: string) => invoke<string>("ms_address_from_public_key", { publicKey }),
+  msDescribeCall: (request: Record<string, unknown>) =>
+    invoke<{ to: string; value: string; data: string }>("ms_describe_call", { request }),
+  msBuildTransaction: (request: Record<string, unknown>) => invoke<MsSignedTx>("ms_build_transaction", { request }),
+  msValidatorPublicKey: (passphrase: string) => invoke<string>("ms_validator_public_key", { passphrase }),
+  msSignMessage: (message: string, passphrase: string, expectedAddress: string) =>
+    invoke<{ message: string; publicKey: string; signature: string }>("ms_sign_message", { message, passphrase, expectedAddress }),
+  msVerifyMessage: (message: string, signer: string, signature: string) =>
+    invoke<boolean>("ms_verify_message", { message, signer, signature }),
   httpGet: (url: string) => invoke<HttpResponse>("http_get", { url }),
   httpPost: (url: string, body: unknown) => invoke<HttpResponse>("http_post", { url, body }),
   loadState: () => invoke<any>("load_state"),

@@ -1,5 +1,5 @@
 import { backend } from "./backend";
-import { ark } from "./ark";
+import { chain, sameAddress } from "./chain";
 import { fetchHistory, fetchPrice, type PriceInfo } from "./price";
 import { describeTx, involves, type TxRow } from "./txinfo";
 import { pickColor } from "./colors";
@@ -16,6 +16,7 @@ import {
   type ApiTransaction,
   type WalletData,
   type WalletEntry,
+  isMainsail,
 } from "./types";
 
 export type View = { name: "dashboard" } | { name: "wallet"; id: string } | { name: "settings" };
@@ -119,6 +120,14 @@ class AppState {
   apiUrl(network: NetworkId): string {
     return (this.settings.apiUrls[network] || NETWORKS[network].defaultApi).replace(/\/+$/, "");
   }
+  /** Mainsail: where signed transactions go */
+  txApiUrl(network: NetworkId): string {
+    return (this.settings.txApiUrls?.[network] || NETWORKS[network].defaultTxApi || this.apiUrl(network)).replace(/\/+$/, "");
+  }
+  /** Mainsail: JSON-RPC (gas estimates, contract reads) */
+  rpcUrl(network: NetworkId): string {
+    return (this.settings.rpcUrls?.[network] || NETWORKS[network].defaultRpc || "").replace(/\/+$/, "");
+  }
 
   explorerTx(network: NetworkId, id: string) {
     return `${NETWORKS[network].explorer}/transactions/${id}`;
@@ -152,6 +161,15 @@ class AppState {
           if (!p.coin) p.coin = "usdc"; // entries from before USDT were USDC
         }
         delete (this.settings as any).exchangeNetwork;
+        // ARK Devnet was replaced by the Mainsail Testnet (different addresses and keys): its wallets
+        // and custom API are dropped; mainnet wallets are untouched
+        const before = this.wallets.length;
+        this.wallets = this.wallets.filter((w) => w.network in NETWORKS);
+        const apis = this.settings.apiUrls as Record<string, string>;
+        if (before !== this.wallets.length || "devnet" in apis) {
+          delete apis.devnet;
+          this.persist();
+        }
         // give older wallets distinct colors once
         let assigned = false;
         for (const w of this.wallets) {
@@ -189,7 +207,7 @@ class AppState {
     this.watching[net] = true;
     try {
       const base = this.apiUrl(net);
-      const newest = await ark.tipHeight(base);
+      const newest = await chain(net).tipHeight(base);
       const prev = this.lastHeight[net];
       this.height[net] = newest;
       if (prev === undefined || newest <= prev) {
@@ -203,12 +221,12 @@ class AppState {
         this.lastHeight[net] = newest;
         return;
       }
-      const blocks = await ark.blocksInRange(base, prev + 1, newest);
+      const blocks = await chain(net).blocksInRange(base, prev + 1, newest);
       // the API can lag a moment behind /blockchain: only advance once every block is visible
       if (blocks.length < newest - prev) return;
       const touched = new Set<string>();
       for (const b of blocks.filter((b) => b.transactions > 0)) {
-        const txs = await ark.blockTransactions(base, b.id);
+        const txs = await chain(net).blockTransactions(base, b.id);
         for (const tx of txs) {
           for (const w of mine) {
             if (!involves(tx, w.address)) continue;
@@ -261,7 +279,7 @@ class AppState {
   // ---------- wallets ----------
 
   addWallet(entry: Omit<WalletEntry, "id" | "addedAt" | "autoName">): WalletEntry | null {
-    if (this.wallets.some((w) => w.address === entry.address)) {
+    if (this.wallets.some((w) => w.network === entry.network && sameAddress(w.address, entry.address))) {
       this.toast("info", "That wallet is already in your collection");
       return null;
     }
@@ -313,7 +331,7 @@ class AppState {
     const w = this.wallets.find((x) => x.id === entry.id) ?? entry; // always mutate the reactive copy
     this.loading[w.address] = true;
     try {
-      const d = await ark.wallet(this.apiUrl(w.network), w.address, mode);
+      const d = await chain(w.network).wallet(this.apiUrl(w.network), w.address, mode);
       this.data[w.address] = d;
       delete this.errors[w.address];
       let changed = false;
@@ -323,14 +341,17 @@ class AppState {
       }
       // Unnamed wallets (or ones still on a default "Wallet N" name) take their delegate username
       const auto = w.autoName ?? /^Wallet \d+$/.test(w.name);
-      if (auto && d.delegate?.username && w.name !== d.delegate.username) {
-        w.name = d.delegate.username;
+      const onChainName = d.delegate?.username || d.username;
+      if (auto && onChainName && w.name !== onChainName) {
+        w.name = onChainName;
         w.autoName = true;
         changed = true;
       }
       if (changed) this.persist();
       const pend = this.pendingNonce[w.address];
-      if (pend !== undefined && BigInt(d.nonce) >= pend) delete this.pendingNonce[w.address];
+      // Core reports the last used nonce, Mainsail the next one to use
+      const confirmed = isMainsail(w.network) ? BigInt(d.nonce) > (pend ?? 0n) : BigInt(d.nonce) >= (pend ?? 0n);
+      if (pend !== undefined && confirmed) delete this.pendingNonce[w.address];
     } catch (e: any) {
       if (mode === "interactive" || !this.data[w.address]) this.errors[w.address] = e?.message ?? String(e);
     } finally {
@@ -343,17 +364,20 @@ class AppState {
   }
 
   /** Nonce to use for the next transaction from this wallet. */
-  nextNonce(address: string): string {
+  nextNonce(address: string, network: NetworkId = "mainnet"): string {
     const d = this.data[address];
-    let n = BigInt(d?.nonce ?? "0");
+    const n = BigInt(d?.nonce ?? "0");
     const p = this.pendingNonce[address];
-    if (p !== undefined && p > n) n = p;
-    return (n + 1n).toString();
+    if (isMainsail(network)) {
+      // Mainsail: the API nonce is the next one to use
+      return (p !== undefined && p + 1n > n ? p + 1n : n).toString();
+    }
+    return ((p !== undefined && p > n ? p : n) + 1n).toString();
   }
 
   markBroadcast(address: string, nonce: string) {
     this.pendingNonce[address] = BigInt(nonce);
-    const w = this.wallets.find((x) => x.address === address);
+    const w = this.wallets.find((x) => sameAddress(x.address, address));
     if (w) {
       setTimeout(() => this.refreshWallet(w, "background"), 9000);
       setTimeout(() => this.refreshWallet(w, "background"), 25000);
@@ -479,6 +503,19 @@ class AppState {
     this.settings.currency = c;
     this.persist();
     this.refreshPrice();
+  }
+
+  /** Mainsail: custom transaction API / JSON-RPC (null = the official one). Saved with the next setApiUrl. */
+  setMainsailUrls(network: NetworkId, txApi: string | null, rpc: string | null) {
+    const n = NETWORKS[network];
+    const tx = { ...(this.settings.txApiUrls ?? {}) };
+    const rp = { ...(this.settings.rpcUrls ?? {}) };
+    if (txApi && txApi.trim().replace(/\/+$/, "") !== n.defaultTxApi) tx[network] = txApi.trim();
+    else delete tx[network];
+    if (rpc && rpc.trim().replace(/\/+$/, "") !== n.defaultRpc) rp[network] = rpc.trim();
+    else delete rp[network];
+    this.settings.txApiUrls = tx;
+    this.settings.rpcUrls = rp;
   }
 
   setApiUrl(network: NetworkId, url: string | null) {

@@ -13,9 +13,9 @@
         {
           "url": "https://ark.geops.net/*"
         },
-        {
-          "url": "https://test.arkscan.io/*"
-        },
+        { "url": "https://explorer-demo.mainsailhq.com/*" },
+        { "url": "https://faucet-demo.mainsailhq.com/" },
+        { "url": "https://faucet-demo.mainsailhq.com/*" },
         { "url": "https://changelly.com/*" },
         { "url": "https://changenow.io/*" },
         { "url": "https://simpleswap.io/*" },

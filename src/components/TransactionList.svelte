@@ -6,7 +6,7 @@
   import DelegateName from "./DelegateName.svelte";
   import { app, TX_PAGE_SIZES } from "../lib/state.svelte";
   import { tick } from "svelte";
-  import { ark } from "../lib/ark";
+  import { chain, sameAddress } from "../lib/chain";
   import { RateLimitError } from "../lib/retry";
   import { openExternal } from "../lib/backend";
   import { formatArk, formatDate, shortAddress, timeAgo } from "../lib/format";
@@ -39,7 +39,7 @@
     const key = `${wallet.address}|${filter}`;
     try {
       // transient API failures are retried automatically inside ark.* (see lib/retry.ts)
-      const r = await ark.transactions(
+      const r = await chain(wallet.network).transactions(
         app.apiUrl(wallet.network), wallet.address, page, filter, app.txPageSize, key === totalKey ? total : 0,
       );
       if (my !== seq) return;
@@ -227,7 +227,7 @@
                   </div>
                   <div class="faint small ellipsis">
                     {#if r.votes}
-                      {#each r.votes as v, i}{i > 0 ? " → " : ""}{v[0] === "+" ? "for " : "from "}<DelegateName network={wallet.network} publicKey={v.slice(1)} link />{/each}
+                      {#each r.votes.filter((v) => v.length > 1) as v, i}{i > 0 ? " → " : ""}{v[0] === "+" ? "for " : "from "}<DelegateName network={wallet.network} publicKey={v.slice(1)} link />{/each}
                     {:else if r.counterparty}
                       {r.dir === "in" ? "from" : "to"} <PartyName network={wallet.network} address={r.counterparty} />
                     {:else if payments.length}
@@ -254,7 +254,7 @@
                 </div>
               {/if}
               <div class="faint small" title={t.sender === wallet.address ? "Fee you paid" : "Fee paid by the sender"}>
-                fee {formatArk(t.fee, 8, 0)}<Sym network={wallet.network} />{t.sender === wallet.address ? "" : " (sender)"}
+                fee {formatArk(t.fee, 8, 0)}<Sym network={wallet.network} />{sameAddress(t.sender, wallet.address) ? "" : " (sender)"}
               </div>
             </td>
             <td class="right c-date">

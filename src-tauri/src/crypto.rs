@@ -72,6 +72,17 @@ impl KeyPair {
         let sig = sig.normalize_s().unwrap_or(sig);
         sig.to_der().as_bytes().to_vec()
     }
+
+    /// Deterministic (RFC6979) low-S ECDSA with recovery id, as Ethereum/Mainsail use it:
+    /// returns (r || s, recovery id 0/1).
+    pub fn sign_recoverable(&self, msg: &[u8; 32]) -> Result<([u8; 64], u8), String> {
+        use k256::ecdsa::SigningKey;
+        let sk = SigningKey::from_slice(self.secret.as_ref()).map_err(|_| "invalid key")?;
+        let (sig, rid) = sk.sign_prehash_recoverable(msg).map_err(|_| "signing failed")?;
+        let mut rs = [0u8; 64];
+        rs.copy_from_slice(&sig.to_bytes());
+        Ok((rs, rid.to_byte()))
+    }
 }
 
 fn xy(p: &AffinePoint) -> Option<([u8; 32], [u8; 32])> {

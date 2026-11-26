@@ -1,7 +1,7 @@
 <script lang="ts">
   import Icon from "./Icon.svelte";
   import { app } from "../lib/state.svelte";
-  import { ark } from "../lib/ark";
+  import { chain, sameAddress } from "../lib/chain";
   import { walletColor } from "../lib/colors";
   import { shortAddress } from "../lib/format";
   import { openExternal } from "../lib/backend";
@@ -10,14 +10,14 @@
   /** Shows the best known name for an address: one of your wallets, else its delegate username, else a short address. */
   let { network, address, chars = 7 }: { network: NetworkId; address: string; chars?: number } = $props();
 
-  const own = $derived(app.wallets.find((w) => w.address === address));
+  const own = $derived(app.wallets.find((w) => w.network === network && sameAddress(w.address, address)));
   let delegate = $state<string | null>(null);
 
   $effect(() => {
     const addr = address;
     delegate = null;
     if (own) return;
-    ark.addressName(app.apiUrl(network), addr).then((n) => {
+    chain(network).addressName(app.apiUrl(network), addr).then((n) => {
       if (addr === address) delegate = n;
     });
   });

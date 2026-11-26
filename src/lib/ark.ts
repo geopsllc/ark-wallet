@@ -27,11 +27,11 @@ export interface NodeFeeConfig {
   pubKeyHash?: number;
 }
 
-function trimBase(base: string) {
+export function trimBase(base: string) {
   return base.replace(/\/+$/, "");
 }
 
-function get(base: string, path: string, mode: RetryMode = "interactive"): Promise<any> {
+export function get(base: string, path: string, mode: RetryMode = "interactive"): Promise<any> {
   return withRetry(() => getOnce(base, path, mode), mode);
 }
 

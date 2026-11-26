@@ -1,7 +1,7 @@
 # ARK Wallet
 
-A lightweight, open-source desktop wallet for the [ARK](https://ark.io) blockchain (ARK Core v3 mainnet and devnet),
-for macOS, Windows and Linux.
+A lightweight, open-source desktop wallet for the [ARK](https://ark.io) blockchain (ARK Core v3 mainnet, plus the
+[Mainsail](https://docs.mainsailhq.com) testnet), for macOS, Windows and Linux.
 
 > **Independent community project.** ARK Wallet is not affiliated with or endorsed by ARK.io / ARK SCIC. The original
 > ARK Desktop Wallet was archived in 2023 in favour of the web-based ARKVault; this project is a fresh native take on a
@@ -19,7 +19,7 @@ for macOS, Windows and Linux.
 
 ## Features
 
-- **Wallet collection**: add any number of mainnet / devnet wallets by address, by passphrase (only the address is
+- **Wallet collection**: add any number of mainnet / Mainsail testnet wallets by address, by passphrase (only the address is
   kept), or by creating a new BIP39 12/24-word passphrase with a backup check.
 - **Balances & portfolio**: live balances, total portfolio value and a 7-day ARK price chart (CoinGecko, 14 currencies).
 - **Transactions**: paginated history with All / Received / Sent filters, memos, multipayment and vote details, and
@@ -36,8 +36,15 @@ for macOS, Windows and Linux.
 - **Exchange** (mainnet): swap ARK to **USDC or USDT** on Polygon, Ethereum, Arbitrum, Optimism, BNB Chain or Base
   (USDC only), comparing quotes from several instant exchanges. See [Exchange](#exchange).
 - **Payout address book**: named USDC/USDT addresses, each tied to its coin and network, in Settings.
-- **Custom API**: every network uses the official ARK API by default (`https://api.ark.io/api`,
-  `https://dwallets.ark.io/api`), and you can point it at your own Core v3 node. The node is checked before it is saved.
+- **Mainsail testnet**: ARK's next chain (EVM-based: 0x addresses, gas fees, 53 validators) on its public testnet.
+  Send, multipay, vote, sign/verify messages (EIP-191), register a username, and **become a validator**: generate or
+  enter a validator (BLS) passphrase, see its public key, and register it with 250 DARK locked. A **Get test DARK**
+  button opens the faucet in your browser with the address copied. Transactions are signed in the Rust core (EIP-155,
+  checked against the official SDK's test vectors and live testnet transactions). Running a validator also needs your
+  own Mainsail node configured with the same validator passphrase.
+- **Custom API**: every network uses the official API by default (`https://api.ark.io/api`; for the testnet
+  `https://testnet.mainsailhq.com` REST, transaction and JSON-RPC endpoints), and you can point it at your own node.
+  The node is checked before it is saved.
 
 ## Security model
 
@@ -50,6 +57,8 @@ for macOS, Windows and Linux.
 - **Accidental publication is blocked.** A transaction is not signed when its memo is a valid BIP39 mnemonic or the
   passphrase of the signing wallet, and a message is not signed when it is the passphrase itself. Memos and signed
   messages are public, and memos stay on the blockchain forever.
+- **Validator passphrases are not stored either.** A Mainsail validator's BLS passphrase is shown once for backup,
+  held in memory only while its screen is open, and refused if it is the wallet's own passphrase.
 - **No clipboard for secrets.** New passphrases have no copy button. The clipboard can be read by other apps and synced
   to other devices.
 - **No screen capture of secrets.** While a new passphrase or a revealed ("show") passphrase is on screen, the window
@@ -57,8 +66,8 @@ for macOS, Windows and Linux.
 - Passphrase fields turn off autocomplete, autocorrect, spellcheck and writing suggestions. Errors never repeat what
   you typed, and nothing is logged.
 - The UI runs under a strict Content Security Policy (no remote or inline scripts, no network access except through
-  the Rust core) with frozen JavaScript prototypes. It may only open a fixed list of links (the ARK explorers
-  ark.geops.net and ARKScan, the exchanges' order pages and the payout chains' explorers) and write to the clipboard.
+  the Rust core) with frozen JavaScript prototypes. It may only open a fixed list of links (the explorers
+  ark.geops.net and the Mainsail testnet explorer, the testnet faucet, the exchanges' order pages and the payout chains' explorers) and write to the clipboard.
 - The Exchange's service is reached only through the Rust core, on three fixed paths. Nothing about your wallets or
   passphrases is sent to it: only the amount, coin, network, payout address and refund (your ARK) address of an order.
 - Limits: the passphrase passes through the webview as a JavaScript string, which can't be wiped from memory (it is
@@ -141,7 +150,7 @@ load-tested to tune how the wallet talks to it (November 2026):
 
 | What | Measured | How the wallet handles it |
 |---|---|---|
-| Rate limit | 200 requests / 60 s per IP (devnet 100); a `429` carries `Retry-After` | The host goes on cooldown for that long. Waits up to 3 s are absorbed silently; longer ones show "Retrying in Ns…" and reload by themselves |
+| Rate limit | 200 requests / 60 s per IP; a `429` carries `Retry-After` | The host goes on cooldown for that long. Waits up to 3 s are absorbed silently; longer ones show "Retrying in Ns…" and reload by themselves |
 | Normal latency | 0.1–0.9 s typical, up to ~3.3 s for heavy queries | 5 s connect timeout, 10 s total per request |
 | Server overload | `500` after ~3.2 s (the server's own query timeout) | User actions retry twice (after 0.3 s and 1 s); network errors retry after 0.5 s and 1.5 s |
 | Deep transaction pages | newest-first queries more than ~20k rows deep usually fail with `500`; oldest-first succeeds at any depth in 1–2.5 s | Pages deeper than 20k rows are read oldest-first and reversed; newest-first is the fallback |

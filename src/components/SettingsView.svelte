@@ -2,6 +2,7 @@
   import Icon from "./Icon.svelte";
   import { app } from "../lib/state.svelte";
   import { ark } from "../lib/ark";
+  import { ms } from "../lib/mainsail";
   import { CURRENCIES } from "../lib/price";
   import { NETWORKS, type NetworkId } from "../lib/types";
   import { evmAddressCheck, choiceLabel, coinOf, isOffered, parseChoice, payoutNetwork, PAYOUT_CHOICES } from "../lib/drain";
@@ -10,13 +11,30 @@
 
   let urls = $state<Record<NetworkId, string>>({
     mainnet: app.apiUrl("mainnet"),
-    devnet: app.apiUrl("devnet"),
+    testnet: app.apiUrl("testnet"),
   });
+  // Mainsail nodes serve signed transactions and JSON-RPC on their own endpoints
+  let txUrls = $state<Partial<Record<NetworkId, string>>>({ testnet: app.txApiUrl("testnet") });
+  let rpcUrls = $state<Partial<Record<NetworkId, string>>>({ testnet: app.rpcUrl("testnet") });
+  const isCustom = (id: NetworkId) => !!(app.settings.apiUrls[id] || app.settings.txApiUrls?.[id] || app.settings.rpcUrls?.[id]);
   let status = $state<Record<string, { kind: "ok" | "error" | "busy"; text: string }>>({});
 
   async function test(id: NetworkId): Promise<boolean> {
     status[id] = { kind: "busy", text: "Testing…" };
     try {
+      if (NETWORKS[id].family === "mainsail") {
+        const [r, chainId] = await Promise.all([ms.probe(urls[id].trim()), ms.chainId(rpcUrls[id]!.trim())]);
+        if (chainId !== NETWORKS[id].chainId) {
+          status[id] = { kind: "error", text: `The JSON-RPC endpoint serves a different chain (chain id ${chainId})` };
+          return false;
+        }
+        if (r.symbol && r.symbol !== NETWORKS[id].symbol) {
+          status[id] = { kind: "error", text: `This node serves a different network (${r.symbol})` };
+          return false;
+        }
+        status[id] = { kind: "ok", text: `Connected · block ${r.height.toLocaleString()} · chain ${chainId}${r.version ? ` · Mainsail ${r.version}` : ""}` };
+        return true;
+      }
       const r = await ark.probe(urls[id].trim());
       if (r.pubKeyHash !== NETWORKS[id].pubKeyHash) {
         status[id] = { kind: "error", text: `This node serves a different network (pubKeyHash ${r.pubKeyHash})` };
@@ -35,6 +53,7 @@
 
   async function save(id: NetworkId) {
     if (await test(id)) {
+      if (NETWORKS[id].family === "mainsail") app.setMainsailUrls(id, txUrls[id] ?? null, rpcUrls[id] ?? null);
       app.setApiUrl(id, urls[id]);
       app.toast("ok", `${NETWORKS[id].name} API saved`);
     }
@@ -42,8 +61,13 @@
 
   function reset(id: NetworkId) {
     urls[id] = NETWORKS[id].defaultApi;
+    if (NETWORKS[id].family === "mainsail") {
+      txUrls[id] = NETWORKS[id].defaultTxApi;
+      rpcUrls[id] = NETWORKS[id].defaultRpc;
+      app.setMainsailUrls(id, null, null);
+    }
     app.setApiUrl(id, null);
-    status[id] = { kind: "ok", text: "Using the official ARK API" };
+    status[id] = { kind: "ok", text: NETWORKS[id].family === "mainsail" ? "Using the official Mainsail endpoints" : "Using the official ARK API" };
   }
 
   // ---- USDC/USDT payout address book (Exchange tab); coin and network are picked together ("usdc:polygon") ----
@@ -113,21 +137,41 @@
   <section class="card stack">
     <div class="row"><Icon name="globe" /><h2>Network API</h2></div>
     <p class="muted" style="margin:0">
-      Wallet data comes from the official ARK API by default. You can point a network at your own or a third-party Core
-      v3 node (e.g. <span class="mono">https://my-node.example.com/api</span>).
+      Wallet data comes from the official APIs by default. You can point a network at your own or a third-party node
+      (e.g. <span class="mono">https://my-node.example.com/api</span>): a Core v3 node for Mainnet, a Mainsail node for
+      the testnet.
     </p>
     {#each ids as id}
       <div class="net">
         <div class="row">
           <h3>{NETWORKS[id].name}</h3>
-          {#if app.settings.apiUrls[id]}<span class="badge warn">Custom</span>{:else}<span class="badge accent">Official</span>{/if}
+          {#if isCustom(id)}<span class="badge warn">Custom</span>{:else}<span class="badge accent">Official</span>{/if}
         </div>
-        <div class="row">
-          <input bind:value={urls[id]} class="mono" spellcheck="false" />
-          <button class="btn" onclick={() => test(id)}>Test</button>
-          <button class="btn primary" onclick={() => save(id)}>Save</button>
-          <button class="btn ghost" title="Reset to the official API" onclick={() => reset(id)}><Icon name="refresh" size={14} /></button>
-        </div>
+        {#if NETWORKS[id].family === "mainsail"}
+          <!-- label | address | actions: the three endpoints line up, the actions sit beside the first -->
+          <div class="epgrid">
+            <span class="faint small">REST API</span>
+            <input bind:value={urls[id]} class="mono" spellcheck="false" />
+            <div class="row">
+              <button class="btn" onclick={() => test(id)}>Test</button>
+              <button class="btn primary" onclick={() => save(id)}>Save</button>
+              <button class="btn ghost" title="Reset to the official endpoints" onclick={() => reset(id)}><Icon name="refresh" size={14} /></button>
+            </div>
+            <span class="faint small">Transactions</span>
+            <input bind:value={txUrls[id]} class="mono" spellcheck="false" />
+            <span></span>
+            <span class="faint small">JSON-RPC</span>
+            <input bind:value={rpcUrls[id]} class="mono" spellcheck="false" />
+            <span></span>
+          </div>
+        {:else}
+          <div class="row">
+            <input bind:value={urls[id]} class="mono" spellcheck="false" />
+            <button class="btn" onclick={() => test(id)}>Test</button>
+            <button class="btn primary" onclick={() => save(id)}>Save</button>
+            <button class="btn ghost" title="Reset to the official API" onclick={() => reset(id)}><Icon name="refresh" size={14} /></button>
+          </div>
+        {/if}
         {#if status[id]}
           <div class="small" class:green={status[id].kind === "ok"} class:red={status[id].kind === "error"} class:muted={status[id].kind === "busy"}>
             {status[id].text}
@@ -259,6 +303,12 @@
 <style>
   .settings {
     gap: 16px;
+  }
+  .epgrid {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 8px 10px;
   }
   .net {
     display: flex;

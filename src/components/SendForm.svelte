@@ -4,14 +4,18 @@
   import Icon from "./Icon.svelte";
   import { app } from "../lib/state.svelte";
   import { ark, type NodeFeeConfig } from "../lib/ark";
-  import { backend } from "../lib/backend";
+  import { invalidAddressText, normalizeAddress } from "../lib/chain";
+  import { gasFee, ms } from "../lib/mainsail";
   import { feeOptions } from "../lib/fees";
   import { formatArk, formatFiat, parseArk, shortAddress, utf8Length } from "../lib/format";
   import { NETWORKS, type TxDraft, type WalletEntry } from "../lib/types";
+  import { sameAddress } from "../lib/chain";
 
   let { wallet }: { wallet: WalletEntry } = $props();
 
   const net = $derived(NETWORKS[wallet.network]);
+  const evm = $derived(net.family === "mainsail");
+  const maxRows = $derived(evm ? 256 : 64);
   const data = $derived(app.data[wallet.address]);
   const balance = $derived(BigInt(data?.balance ?? "0"));
 
@@ -27,9 +31,15 @@
   let draft = $state<TxDraft | null>(null);
   let cfg = $state<NodeFeeConfig | null>(null);
 
+  let gas = $state<{ minPrice: bigint; avgPrice: bigint } | null>(null);
   $effect(() => {
-    ark.fees(app.apiUrl(wallet.network)).then((c) => (cfg = c)).catch(() => {});
+    if (evm) ms.gas(app.apiUrl(wallet.network)).then((g) => (gas = g)).catch(() => {});
+    else ark.fees(app.apiUrl(wallet.network)).then((c) => (cfg = c)).catch(() => {});
   });
+  // Mainsail: a plain transfer costs 21000 gas, plus 16 per memo byte (calldata); the exact
+  // amount for anything else is estimated by the node on review
+  const memoGas = $derived(new TextEncoder().encode(memo.trim()).reduce((s, b) => s + (b ? 16 : 4), 0));
+  const transferGas = $derived(21000 + memoGas);
 
   const memoBytes = $derived(utf8Length(memo.trim()));
   const memoTooLong = $derived(memoBytes > 255);
@@ -46,7 +56,10 @@
         })
       : null,
   );
-  const defaultFee = $derived(est ? (app.settings.feeChoice === "min" ? est.min : est.avg) : null);
+  const defaultFee = $derived.by<bigint | null>(() => {
+    if (evm) return gas ? gasFee(transferGas, app.settings.feeChoice === "min" ? gas.minPrice : gas.avgPrice) : null;
+    return est ? (app.settings.feeChoice === "min" ? est.min : est.avg) : null;
+  });
 
   const sum = $derived.by(() => {
     if (mode === "single") return parseArk(amount) ?? 0n;
@@ -65,7 +78,7 @@
   }
 
   function nameFor(addr: string) {
-    const w = app.wallets.find((x) => x.address === addr.trim());
+    const w = app.wallets.find((x) => x.network === wallet.network && sameAddress(x.address, addr.trim()));
     return w ? `${w.name} (${shortAddress(addr, 5)})` : addr.trim();
   }
 
@@ -74,9 +87,8 @@
     if (memoTooLong) return (error = "Memo is longer than 255 bytes");
     const vendorField = memo.trim() || undefined;
     if (mode === "single") {
-      const r = recipient.trim();
-      if (!(await backend.validateAddress(r, net.pubKeyHash)))
-        return (error = `Not a valid ${net.name} address (should start with "${net.addressPrefix}")`);
+      const r = await normalizeAddress(wallet.network, recipient);
+      if (!r) return (error = invalidAddressText(wallet.network));
       const a = parseArk(amount);
       if (!a || a <= 0n) return (error = "Enter an amount greater than zero");
       draft = {
@@ -94,8 +106,8 @@
       if (rows.length < 2) return (error = "A multipayment needs at least 2 recipients");
       const payments: { amount: string; recipientId: string }[] = [];
       for (const [i, row] of rows.entries()) {
-        const r = row.recipient.trim();
-        if (!(await backend.validateAddress(r, net.pubKeyHash))) return (error = `Row ${i + 1}: invalid ${net.name} address`);
+        const r = await normalizeAddress(wallet.network, row.recipient);
+        if (!r) return (error = `Row ${i + 1}: invalid ${net.name} address`);
         const a = parseArk(row.amount);
         if (!a || a <= 0n) return (error = `Row ${i + 1}: enter an amount greater than zero`);
         payments.push({ recipientId: r, amount: a.toString() });
@@ -165,10 +177,10 @@
         </div>
       {/each}
       <div class="row">
-        <button class="btn small" disabled={rows.length >= 64} onclick={() => rows.push({ recipient: "", amount: "" })}>
+        <button class="btn small" disabled={rows.length >= maxRows} onclick={() => rows.push({ recipient: "", amount: "" })}>
           <Icon name="plus" size={13} /> Add recipient
         </button>
-        <span class="faint small">{rows.length} / 64</span>
+        <span class="faint small">{rows.length} / {maxRows}</span>
         <span class="spacer"></span>
         <span class="muted small">Total: <span class="num">{formatArk(sum)}<Sym network={wallet.network} /></span> {#if fiat(sum)}≈ <span class="usd">{fiat(sum)}</span>{/if}</span>
       </div>
@@ -176,13 +188,27 @@
   {/if}
 
   <label class="field">
-    <span class="row">Memo (vendor field) <span class="spacer"></span>
+    <span class="row">{evm ? "Memo" : "Memo (vendor field)"} <span class="spacer"></span>
       <span class="num" class:red={memoTooLong} class:faint={!memoTooLong}>{memoBytes} / 255 bytes</span>
     </span>
     <input bind:value={memo} placeholder="Optional public message" class:invalid={memoTooLong} />
   </label>
 
-  {#if est}
+  {#if evm && gas}
+    <div class="estimate small">
+      <Icon name="layers" size={13} />
+      {#if mode === "single"}
+        <span>Gas <b class="num">{transferGas.toLocaleString()}</b></span>
+        <span class="dot">·</span>
+        <span>Minimum fee <b class="num">{formatArk(gasFee(transferGas, gas.minPrice), 8, 0)}<Sym network={wallet.network} /></b></span>
+        <span class="dot">·</span>
+        <span>Average <b class="num">{formatArk(gasFee(transferGas, gas.avgPrice), 8, 0)}<Sym network={wallet.network} /></b></span>
+        {#if memoBytes > 0}<span class="faint">(memo adds {memoGas} gas)</span>{/if}
+      {:else}
+        <span>The network works out the gas for a multipayment when you review it.</span>
+      {/if}
+    </div>
+  {:else if est}
     <div class="estimate small">
       <Icon name="layers" size={13} />
       <span>Size <b class="num">{est.size}</b> bytes</span>
