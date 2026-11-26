@@ -33,6 +33,9 @@ for macOS, Windows and Linux.
 - **Second passphrase**: sign with it automatically when a wallet has one, or register a new one.
 - **Delegates**: register a delegate name (with availability check) or resign.
 - **Sign / verify messages**.
+- **Exchange** (mainnet): swap ARK to **USDC or USDT** on Polygon, Ethereum, Arbitrum, Optimism, BNB Chain or Base
+  (USDC only), comparing quotes from several instant exchanges. See [Exchange](#exchange).
+- **Payout address book**: named USDC/USDT addresses, each tied to its coin and network, in Settings.
 - **Custom API**: every network uses the official ARK API by default (`https://api.ark.io/api`,
   `https://dwallets.ark.io/api`), and you can point it at your own Core v3 node. The node is checked before it is saved.
 
@@ -54,14 +57,54 @@ for macOS, Windows and Linux.
 - Passphrase fields turn off autocomplete, autocorrect, spellcheck and writing suggestions. Errors never repeat what
   you typed, and nothing is logged.
 - The UI runs under a strict Content Security Policy (no remote or inline scripts, no network access except through
-  the Rust core) with frozen JavaScript prototypes. It may only open explorer links (ark.geops.net for mainnet,
-  ARKScan for devnet) and write to the clipboard.
+  the Rust core) with frozen JavaScript prototypes. It may only open a fixed list of links (the ARK explorers
+  ark.geops.net and ARKScan, the exchanges' order pages and the payout chains' explorers) and write to the clipboard.
+- The Exchange's service is reached only through the Rust core, on three fixed paths. Nothing about your wallets or
+  passphrases is sent to it: only the amount, coin, network, payout address and refund (your ARK) address of an order.
 - Limits: the passphrase passes through the webview as a JavaScript string, which can't be wiped from memory (it is
   dropped as soon as it has been used). Malware already running as your user (a keylogger, or an app with
   Accessibility access) can see what you type in any app. Use the wallet on a machine you trust.
 - Signing uses ARK's Schnorr scheme (the same one as ARK's own SDKs); message signing uses ECDSA. The serializer and
   signature code are tested against real mainnet transactions of every supported type (see
   `src-tauri/tests/fixtures`).
+
+## Exchange
+
+The **Exchange** tab (mainnet wallets only) swaps ARK to USDC or USDT without an exchange account:
+
+1. **Pick a payout address.** Choose one from your payout address book (**Settings → Payout addresses**: a name, a
+   coin·network and a `0x` address), or enter a one-off address with its coin and network. Addresses are checked
+   with their EIP-55 checksum, and all-lowercase ones get a warning because they can't be checked.
+2. **Get quotes.** Enter an amount (or **Max**: balance minus the transfer fee). The wallet asks the exchange
+   aggregators [Flashift](https://flashift.app) and [Trocador](https://trocador.app) for quotes and lists the best
+   offers from the instant exchanges behind them (ChangeNOW, Changelly, SimpleSwap, StealthEX and others), ranked by
+   what you receive, next to the market value.
+3. **Create the order.** The exchange you pick returns an ARK deposit address. Before anything is signed, the wallet
+   checks that the order pays out to **your** address, in the coin and on the network you chose, for the amount you
+   entered, within 3% of the quote, that the deposit address is a valid ARK address that isn't one of your own, and
+   that no deposit memo is required. Any mismatch blocks the order.
+4. **Confirm the transfer.** Nothing is sent until you confirm: you see the deposit address, amount and fee, then type
+   your passphrase, and the ARK transfer is signed locally like any other. Your wallet's own address is the refund
+   address.
+5. **Follow it.** The order card and the history link to the exchange's own order page and to your payout address on
+   the chain's explorer (Polygonscan, Etherscan, …), where the coins arriving can be seen directly.
+
+**How it connects.** The aggregator APIs need API keys, which can't be kept secret inside a public app. The app
+therefore talks to a small hosted service, `https://xc.geops.net`, which holds the keys and only **quotes and creates
+orders**: it never sees a passphrase, can't move funds, and keeps no logs of IPs or orders. It is open to any client
+and protects the keys with rate limits (10 requests a minute per IP, 15 a minute per aggregator), so quotes may
+briefly show a cooldown. The exchange itself (rates, fees, KYC policy, delivery) is entirely the chosen exchange's
+service, not this project's.
+
+**Using your own service.** To use a different one, build with its URL:
+
+```bash
+EXCHANGE_WORKER_URL=https://your-service.example npm run tauri build
+```
+
+It must use `https` (plain `http` is accepted only for `localhost`) and answer `POST /health`, `/quote` and `/order`
+with the same JSON the app's [`src/lib/drain.ts`](src/lib/drain.ts) expects. The app checks every order it gets back
+as described above, whichever service created it.
 
 ## How fees are calculated
 
@@ -113,7 +156,8 @@ background refresh keeps the last good balance on screen instead of showing an e
 
 - [Tauri 2](https://tauri.app) shell, with a Rust core for keys, AIP-11 serialization, signing and HTTP (`k256`, `bip39`)
 - [Svelte 5](https://svelte.dev) + TypeScript + Vite UI
-- Data: official ARK Core v3 REST API; prices: CoinGecko public API
+- Data: official ARK Core v3 REST API; prices: CoinGecko public API; exchange quotes and orders: Flashift and
+  Trocador through the hosted exchange service
 
 ## Downloads
 
