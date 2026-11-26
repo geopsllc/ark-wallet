@@ -38,7 +38,7 @@ A lightweight, open-source desktop wallet for the [ARK](https://ark.io) blockcha
 - **Payout address book**: named USDC/USDT addresses, each tied to its coin and network, in Settings.
 - **Mainsail testnet**: ARK's next chain (EVM-based: 0x addresses, gas fees, 53 validators) on its public testnet.
   Send, multipay, vote, sign/verify messages (EIP-191), register a username, and **become a validator**: generate or
-  enter a validator (BLS) passphrase, see its public key, and register it with 250 DARK locked. A **Get test DARK**
+  enter a validator (BLS) passphrase, see its public key, and register it with 250 TARK locked. A **Get test TARK**
   button opens the faucet in your browser with the address copied. Transactions are signed in the Rust core (EIP-155,
   checked against the official SDK's test vectors and live testnet transactions). Running a validator also needs your
   own Mainsail node configured with the same validator passphrase.

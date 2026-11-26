@@ -54,7 +54,7 @@ export const NETWORKS: Record<NetworkId, NetworkDef> = {
     badge: "Testnet",
     pubKeyHash: 0,
     chainId: 11812,
-    token: "DARK",
+    token: "TARK",
     symbol: "TѦ",
     defaultApi: "https://testnet.mainsailhq.com/api",
     defaultTxApi: "https://testnet.mainsailhq.com/tx/api",
