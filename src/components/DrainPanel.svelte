@@ -247,7 +247,7 @@
         <label class="xlabel" for="xamount">Amount</label>
         <div class="xfield amt">
           <input id="xamount" bind:value={amount} class="num" placeholder="Amount of ARK" inputmode="decimal" spellcheck="false" autocomplete="off"
-            onkeydown={(e) => e.key === "Enter" && getQuotes()} />
+            onkeydown={(e) => { if (e.key === "Enter") { e.preventDefault(); getQuotes(); } }} />
           <button class="btn small inmax" onclick={max} disabled={fee === null} title="Balance minus the transfer fee">Max</button>
         </div>
         <div class="xextra">{#if market !== null}<span class="muted small">market ≈ <span class="usd">{formatFiat(market, "usd")}</span></span>{/if}</div>

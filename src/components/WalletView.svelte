@@ -78,7 +78,10 @@
           class="name-input"
           bind:value={newName}
           onkeydown={(e) => {
-            if (e.key === "Enter") saveName();
+            if (e.key === "Enter") {
+              e.preventDefault(); // handled here: not the header's Send button
+              saveName();
+            }
             if (e.key === "Escape") editing = false;
           }}
           onblur={saveName}

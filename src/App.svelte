@@ -8,6 +8,7 @@
   import TxOverlay from "./components/TxOverlay.svelte";
   import { app } from "./lib/state.svelte";
   import { installBackNavigation } from "./lib/backnav";
+  import { installEnterKey } from "./lib/enterkey";
   import { listen } from "@tauri-apps/api/event";
 
   let adding = $state(false);
@@ -15,6 +16,9 @@
   $effect(() => {
     app.init();
   });
+
+  // Return presses the highlighted (blue) button of the form you are in
+  $effect(() => installEnterKey());
 
   // mouse back button / trackpad swipe / Cmd+[ return to the previous panel
   $effect(() =>

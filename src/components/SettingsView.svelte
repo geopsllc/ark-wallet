@@ -209,7 +209,7 @@
             {#if editing === p.id}
               <!-- svelte-ignore a11y_autofocus -->
               <input class="pname-input" bind:value={editName} maxlength="40" autofocus
-                onkeydown={(e) => { if (e.key === "Enter") saveEdit(); if (e.key === "Escape") { editing = null; pError = ""; } }} />
+                onkeydown={(e) => { if (e.key === "Enter") { e.preventDefault(); saveEdit(); } if (e.key === "Escape") { editing = null; pError = ""; } }} />
               <select class="pnet-edit" bind:value={editChoice} title="Coin and network of this address">
                 {#each PAYOUT_CHOICES as c (c.value)}<option value={c.value}>{c.label}</option>{/each}
               </select>
@@ -239,7 +239,7 @@
         {#each PAYOUT_CHOICES as c (c.value)}<option value={c.value}>{c.label}</option>{/each}
       </select>
       <input bind:value={pAddr} class="mono" placeholder="0x… address" spellcheck="false" autocomplete="off" style="flex:1"
-        onkeydown={(e) => e.key === "Enter" && addPayout()} />
+        onkeydown={(e) => { if (e.key === "Enter") { e.preventDefault(); addPayout(); } }} />
       <button class="btn primary" onclick={addPayout}><Icon name="plus" size={13} /> Add</button>
     </div>
     {#if pError}<div class="small red">{pError}</div>{/if}
