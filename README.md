@@ -59,8 +59,9 @@ A lightweight, open-source desktop wallet for the [ARK](https://ark.io) blockcha
   messages are public, and memos stay on the blockchain forever.
 - **Validator passphrases are not stored either.** A Mainsail validator's BLS passphrase is shown once for backup,
   held in memory only while its screen is open, and refused if it is the wallet's own passphrase.
-- **No clipboard for secrets.** New passphrases have no copy button. The clipboard can be read by other apps and synced
-  to other devices.
+- **Clipboard only when you ask.** New wallet and validator passphrases have a Copy button (with a warning that the
+  clipboard can be read by other apps and synced to other devices); the second-passphrase setup has none. Nothing
+  else secret is ever copied.
 - **No screen capture of secrets.** While a new passphrase or a revealed ("show") passphrase is on screen, the window
   is excluded from screenshots, screen recording and screen sharing (macOS and Windows).
 - Passphrase fields turn off autocomplete, autocorrect, spellcheck and writing suggestions. Errors never repeat what

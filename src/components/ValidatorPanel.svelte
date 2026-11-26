@@ -184,7 +184,7 @@
       This is the passphrase of the validator's consensus (BLS) key. It is separate from your wallet passphrase: your
       node needs it, so it is not saved here. Write it down.
     </p>
-    <MnemonicSetup words={24} confirmLabel="Use this key" oncancel={() => (keyMode = "")} ondone={useKey} />
+    <MnemonicSetup copyable words={24} confirmLabel="Use this key" oncancel={() => (keyMode = "")} ondone={useKey} />
   {:else if keyMode === "enter"}
     <label class="field">
       Validator passphrase

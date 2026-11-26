@@ -109,7 +109,7 @@
       <p class="muted" style="margin:0">Generate a new BIP39 passphrase for a brand-new {net.name} wallet.</p>
       <div><button class="btn primary" onclick={() => (creating = true)}>Generate passphrase</button></div>
     {:else}
-      <MnemonicSetup confirmLabel="Create wallet" oncancel={() => (creating = false)} ondone={created} />
+      <MnemonicSetup copyable confirmLabel="Create wallet" oncancel={() => (creating = false)} ondone={created} />
     {/if}
 
     {#if error}<div class="notice error">{error}</div>{/if}

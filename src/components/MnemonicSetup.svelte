@@ -1,13 +1,22 @@
 <script lang="ts">
   import Icon from "./Icon.svelte";
+  import CopyButton from "./CopyButton.svelte";
   import { backend, shieldScreen } from "../lib/backend";
 
   let {
     words = 12,
     confirmLabel = "Create",
+    copyable = false,
     oncancel,
     ondone,
-  }: { words?: 12 | 24; confirmLabel?: string; oncancel: () => void; ondone: (mnemonic: string) => void } = $props();
+  }: {
+    words?: 12 | 24;
+    confirmLabel?: string;
+    /** offer a Copy button for the new passphrase (new wallets, validator keys) */
+    copyable?: boolean;
+    oncancel: () => void;
+    ondone: (mnemonic: string) => void;
+  } = $props();
 
   // svelte-ignore state_referenced_locally
   let count = $state<12 | 24>(words);
@@ -56,6 +65,7 @@
         <button class:on={count === 24} onclick={() => (count = 24)}>24 words</button>
       </div>
       <span class="spacer"></span>
+      {#if copyable && mnemonic}<CopyButton text={mnemonic} label="Copy" />{/if}
       <button class="btn ghost small" onclick={generate}><Icon name="refresh" size={13} /> New</button>
     </div>
     <div class="words">
@@ -64,9 +74,15 @@
       {/each}
     </div>
     <div class="notice warn">
-      Write these words down on paper, in order, and keep them offline. There is deliberately no copy button: the
-      clipboard can be read by other apps and synced to other devices. Anyone with them controls the funds, and this app never
-      stores them. If you lose them, nobody can recover them.
+      {#if copyable}
+        Write these words down on paper, in order, and keep them offline. If you copy them, paste them only where they
+        belong and copy something else afterwards: the clipboard can be read by other apps and synced to other devices.
+        Anyone with them controls the funds, and this app never stores them. If you lose them, nobody can recover them.
+      {:else}
+        Write these words down on paper, in order, and keep them offline. There is deliberately no copy button: the
+        clipboard can be read by other apps and synced to other devices. Anyone with them controls the funds, and this app never
+        stores them. If you lose them, nobody can recover them.
+      {/if}
     </div>
     <label class="row small" style="cursor:pointer"><input type="checkbox" bind:checked={written} /> I have written down the passphrase</label>
     <div class="row">
