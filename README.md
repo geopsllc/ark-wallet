@@ -25,13 +25,13 @@ A lightweight, open-source desktop wallet for the [ARK](https://ark.io) blockcha
 - **Transactions**: paginated history with All / Received / Sent filters, memos, multipayment and vote details, and
   links to the explorer.
 - **Send**: transfers and multipayments (up to 64 recipients) with an optional memo (vendor field, 255 bytes).
-- **Vote**: vote, unvote, or **switch your vote in a single transaction** (`["-old", "+new"]`). Searchable delegate list
+- **Vote**: vote, unvote, or **switch your vote in a single transaction** (`["-old", "+new"]`). Searchable validator list
   with rank, votes and approval.
 - **Fees**: every transaction shows the exact **minimum fee** the network accepts, calculated from its size (memo
   included) with the node's dynamic-fee rules, next to the 7-day **average**, or a custom fee. Your Minimum / Average
   choice is remembered as the default.
 - **Second passphrase**: sign with it automatically when a wallet has one, or register a new one.
-- **Delegates**: register a delegate name (with availability check) or resign.
+- **Validators**: register a validator name (with availability check) or resign.
 - **Sign / verify messages**.
 - **Exchange** (mainnet): swap ARK to **USDC or USDT** on Polygon, Ethereum, Arbitrum, Optimism, BNB Chain or Base
   (USDC only), comparing quotes from several instant exchanges. See [Exchange](#exchange).
@@ -155,7 +155,7 @@ load-tested to tune how the wallet talks to it (November 2026):
 | Normal latency | 0.1–0.9 s typical, up to ~3.3 s for heavy queries | 5 s connect timeout, 10 s total per request |
 | Server overload | `500` after ~3.2 s (the server's own query timeout) | User actions retry twice (after 0.3 s and 1 s); network errors retry after 0.5 s and 1.5 s |
 | Deep transaction pages | newest-first queries more than ~20k rows deep usually fail with `500`; oldest-first succeeds at any depth in 1–2.5 s | Pages deeper than 20k rows are read oldest-first and reversed; newest-first is the fallback |
-| Counterparty names | one `/wallets/{address}` lookup per row would cost up to 100 requests per page | The delegate directory (~14 requests) is loaded once and refreshed every 30 min |
+| Counterparty names | one `/wallets/{address}` lookup per row would cost up to 100 requests per page | The validator directory (~14 requests) is loaded once and refreshed every 30 min |
 | New blocks | `/blockchain` ~0.13 s; `/blocks?height.from&height.to` ~0.17 s; "latest blocks" queries ~3 s with frequent `500`s | The watcher polls the tip every 8 s and fetches only the new height range |
 
 Background work (the block watcher and periodic refresh) makes a single attempt and never
