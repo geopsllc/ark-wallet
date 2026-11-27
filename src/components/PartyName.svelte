@@ -5,10 +5,12 @@
   import { walletColor } from "../lib/colors";
   import { shortAddress } from "../lib/format";
   import { openExternal } from "../lib/backend";
+  import Address from "./Address.svelte";
   import type { NetworkId } from "../lib/types";
 
   /** Shows the best known name for an address: one of your wallets, else its delegate username, else a short address. */
-  let { network, address, chars = 7 }: { network: NetworkId; address: string; chars?: number } = $props();
+  /** `fill`: a raw address takes all the width it is given, cut in the middle, instead of a fixed 7…7. */
+  let { network, address, chars = 7, fill = false }: { network: NetworkId; address: string; chars?: number; fill?: boolean } = $props();
 
   const own = $derived(app.wallets.find((w) => w.network === network && sameAddress(w.address, address)));
   let delegate = $state<string | null>(null);
@@ -37,6 +39,8 @@
     <span class="own" style="color:{walletColor(own)}">{own.name}</span>
   {:else if delegate}
     <span class="accent">{delegate}</span>
+  {:else if fill}
+    <Address {address} center />
   {:else}
     <span class="mono">{shortAddress(address, chars)}</span>
   {/if}
