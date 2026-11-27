@@ -231,7 +231,7 @@
                     {:else if r.counterparty}
                       {r.dir === "in" ? "from" : "to"} <PartyName network={wallet.network} address={r.counterparty} />
                     {:else if payments.length}
-                      <span class="mp"><span class="mp-to">to&nbsp;</span><PartyName network={wallet.network} address={shownRecipient(payments)} />{#if payments.length > 1}<span class="mp-more">&nbsp;+ {payments.length - 1} more</span>{/if}</span>
+                      <span class="mp"><span class="mp-to">to&nbsp;</span><PartyName network={wallet.network} address={shownRecipient(payments)} chars={5} />{#if payments.length > 1}<span class="mp-more">&nbsp;+ {payments.length - 1} more</span>{/if}</span>
                     {:else}
                       by <PartyName network={wallet.network} address={t.sender} />
                     {/if}
@@ -280,14 +280,13 @@
 </div>
 
 <style>
-  /* multipayment line: the recipient shrinks (with "…") before "+ N more" is ever cut */
+  /* multipayment line: the recipient is already shortened (5…5), so it never gets a second "…";
+     if the column is too narrow, the line itself ends in "…" after the address */
   .mp {
-    display: flex;
-    min-width: 0;
-  }
-  .mp-to,
-  .mp-more {
-    flex-shrink: 0;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .count.gone {
     display: none;
