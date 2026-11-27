@@ -41,7 +41,7 @@
   {:else if delegate}
     <span class="accent">{delegate}</span>
   {:else if fill}
-    <Address {address} center />
+    <Address {address} center within=".cp" />
   {:else}
     <span class="mono">{shortAddress(address, chars)}</span>
   {/if}
