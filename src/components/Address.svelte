@@ -10,21 +10,46 @@
   let box = $state<HTMLSpanElement>();
   let probe = $state<HTMLSpanElement>();
   let avail = $state(0);
+  let charW = $state(0);
+  let trim = $state(0); // extra characters dropped when the rendered text still overflowed
 
+  // Width and character width are both re-measured on every resize and once web fonts are ready: measuring the
+  // character width only once could catch the fallback font and keep a cut that is too long.
+  function measure() {
+    if (!box || !probe) return;
+    avail = box.getBoundingClientRect().width; // fractional, not rounded
+    charW = probe.getBoundingClientRect().width / address.length; // monospace: every character is the same width
+    trim = 0;
+  }
   $effect(() => {
-    if (!center || !box) return;
-    const ro = new ResizeObserver(() => (avail = box!.clientWidth));
+    if (!center || !box || !probe) return;
+    void address;
+    measure();
+    const ro = new ResizeObserver(measure);
     ro.observe(box);
-    return () => ro.disconnect();
+    let live = true;
+    document.fonts?.ready.then(() => live && measure());
+    return () => {
+      live = false;
+      ro.disconnect();
+    };
   });
 
   const shown = $derived.by(() => {
-    if (!center || !probe || !avail) return address;
-    const charW = probe.getBoundingClientRect().width / address.length; // monospace: every char is the same width
-    const fit = Math.floor((avail + 0.5) / charW);
+    if (!center || !avail || !charW) return address;
+    const fit = Math.floor((avail - 0.5) / charW) - trim; // never round up
     if (fit >= address.length) return address;
     const keep = Math.max(fit - 1, 4); // one slot for "…"
     return address.slice(0, Math.ceil(keep / 2)) + "…" + address.slice(address.length - Math.floor(keep / 2));
+  });
+
+  // safety net: if the text as drawn is still wider than its box, drop one more character
+  $effect(() => {
+    void shown;
+    if (!center || !box || !box.firstChild || shown === address && trim === 0) return;
+    const r = document.createRange();
+    r.selectNodeContents(box.firstChild);
+    if (r.getBoundingClientRect().width > box.getBoundingClientRect().width + 0.5 && trim < 6) trim += 1;
   });
 </script>
 
