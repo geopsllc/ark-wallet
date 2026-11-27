@@ -48,7 +48,7 @@
     editing = false;
   }
 
-  const Who = $derived(net.producer === "validator" ? "Validator" : "Delegate");
+  const Who = "Validator";
 
   /** Test networks: the faucet is a web page (it has a captcha), so copy the address and open it */
   async function faucet() {
@@ -65,7 +65,7 @@
     ...(wallet.network === "mainnet" ? [{ id: "drain" as Tab, label: "Exchange", icon: "swap" }] : []),
     { id: "vote", label: "Vote", icon: "vote" },
     { id: "message", label: "Sign / Verify", icon: "message" },
-    { id: "advanced", label: net.family === "mainsail" ? "Validator & Username" : "Delegate & Security", icon: "shield" },
+    { id: "advanced", label: net.family === "mainsail" ? "Validator & Username" : "Validator & Security", icon: "shield" },
   ]);
 </script>
 

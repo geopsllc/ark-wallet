@@ -44,7 +44,7 @@ export const NETWORKS: Record<NetworkId, NetworkDef> = {
     explorer: "https://ark.geops.net",
     addressPrefix: "A",
     hasFiatValue: true,
-    producer: "delegate",
+    producer: "validator",
     activeProducers: 51,
   },
   testnet: {

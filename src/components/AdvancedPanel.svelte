@@ -42,8 +42,8 @@
     const u = username.trim();
     draft = {
       kind: "delegateRegistration",
-      title: "Register as delegate",
-      summary: [["Delegate name", u]],
+      title: "Register as validator",
+      summary: [["Validator name", u]],
       fields: { username: u },
       total: 0n,
     };
@@ -52,9 +52,9 @@
   function resign() {
     draft = {
       kind: "delegateResignation",
-      title: "Resign delegate",
+      title: "Resign validator",
       summary: [
-        ["Delegate", data?.delegate?.username ?? ""],
+        ["Validator", data?.delegate?.username ?? ""],
         ["Warning", "Resignation is permanent and cannot be undone"],
       ],
       fields: {},
@@ -101,7 +101,7 @@
   </section>
 
   <section class="card stack">
-    <div class="row"><Icon name="star" /><h2>Delegate</h2></div>
+    <div class="row"><Icon name="star" /><h2>Validator</h2></div>
     {#if data?.delegate}
       <div class="row">
         <span style="font-size:16px;font-weight:600">{data.delegate.username}</span>
@@ -113,14 +113,14 @@
         <div class="muted small">Vote weight: <span class="num">{formatArk(data.delegate.voteBalance, 0, 0)}<Sym network={wallet.network} /></span></div>
       {/if}
       {#if !data.delegate.resigned}
-        <div class="notice warn">Resigning permanently removes this delegate from forging. It cannot be undone.</div>
-        <div><button class="btn danger" onclick={resign}>Resign delegate</button></div>
+        <div class="notice warn">Resigning permanently removes this validator from forging. It cannot be undone.</div>
+        <div><button class="btn danger" onclick={resign}>Resign validator</button></div>
       {/if}
     {:else}
-      <p class="muted" style="margin:0">Register this wallet as a delegate. The name is permanent: 1–20 lowercase letters, digits or <span class="mono">!@$&_.</span></p>
+      <p class="muted" style="margin:0">Register this wallet as a validator. The name is permanent: 1–20 lowercase letters, digits or <span class="mono">!@$&_.</span></p>
       <label class="field">
-        Delegate name
-        <input bind:value={username} oninput={onName} placeholder="mydelegate" class:invalid={nameStatus === "invalid" || nameStatus === "taken"} spellcheck="false" />
+        Validator name
+        <input bind:value={username} oninput={onName} placeholder="myvalidator" class:invalid={nameStatus === "invalid" || nameStatus === "taken"} spellcheck="false" />
       </label>
       <div class="small">
         {#if nameStatus === "checking"}<span class="muted">Checking availability…</span>
@@ -128,7 +128,7 @@
         {:else if nameStatus === "free"}<span class="green">Available</span>
         {:else if nameStatus === "invalid"}<span class="red">Use 1–20 lowercase letters, digits or !@$&_.</span>{/if}
       </div>
-      <div><button class="btn primary" disabled={nameStatus !== "free" || !data} onclick={register}>Register delegate</button></div>
+      <div><button class="btn primary" disabled={nameStatus !== "free" || !data} onclick={register}>Register validator</button></div>
     {/if}
   </section>
 </div>

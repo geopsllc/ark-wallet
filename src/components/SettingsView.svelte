@@ -259,9 +259,9 @@
     </div>
     <div class="line">
       <div>
-        <div>Include delegate wallets in totals</div>
+        <div>Include validator wallets in totals</div>
         <div class="muted small">
-          Off by default: a delegate's balance is usually shared out to its voters, so it isn't really yours. Affects the
+          Off by default: a validator's balance is usually shared out to its voters, so it isn't really yours. Affects the
           portfolio total on the dashboard and in the sidebar.
         </div>
       </div>
@@ -269,7 +269,7 @@
         class="switch"
         role="switch"
         aria-checked={!!app.settings.includeDelegates}
-        aria-label="Include delegate wallets in totals"
+        aria-label="Include validator wallets in totals"
         onclick={() => app.setIncludeDelegates(!app.settings.includeDelegates)}
       ><span></span></button>
     </div>

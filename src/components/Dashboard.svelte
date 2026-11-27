@@ -33,12 +33,12 @@
   </div>
   <div class="top">
     <div class="card portfolio">
-      <div class="muted small one" title={app.settings.includeDelegates ? "Mainnet wallets, including delegate wallets" : "Mainnet wallets, excluding delegate wallets"}>Total balance</div>
+      <div class="muted small one" title={app.settings.includeDelegates ? "Mainnet wallets, including validator wallets" : "Mainnet wallets, excluding validator wallets"}>Total balance</div>
       <div class="big num">{formatArk(totalArk, 4, 2)}<Sym /></div>
       <div class="fiat num">{totalFiat !== null ? formatFiat(totalFiat, cur) : "—"}</div>
       {#if delegateArk > 0n}
         <div class="faint small num one" title="Change this in Settings → General">
-          {app.settings.includeDelegates ? "Includes" : "Excludes"} {formatArk(delegateArk, 2, 2)}<Sym /> in delegates
+          {app.settings.includeDelegates ? "Includes" : "Excludes"} {formatArk(delegateArk, 2, 2)}<Sym /> in validators
         </div>
       {/if}
       <div class="meta">
@@ -95,10 +95,7 @@
             <span class="wn"><WalletName wallet={w} /></span>
             {#if w.network !== "mainnet"}<span class="badge warn" title={NETWORKS[w.network].name}>{NETWORKS[w.network].badge}</span>{/if}
             {#if d?.delegate}
-              {@const role = NETWORKS[w.network].producer === "validator" ? "Validator" : "Delegate"}
-              <!-- next to the network badge there is only room for an icon -->
-              {#if w.network !== "mainnet"}<span class="badge brand" title={role}><Icon name="star" size={11} /></span>
-              {:else}<span class="badge brand">{role}</span>{/if}
+              <span class="badge brand">Validator</span>
             {/if}
           </div>
           <div class="faint small"><Address address={w.address} /></div>
@@ -222,6 +219,10 @@
   .wn {
     display: flex;
     min-width: 0;
+  }
+  /* name + Testnet + Validator pills share one line: a tighter gap leaves the name room for ~10 characters */
+  .wcard > .row:first-child {
+    gap: 5px;
   }
   .votes {
     display: inline-flex;

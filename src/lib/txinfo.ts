@@ -20,7 +20,7 @@ export function describeTx(t: ApiTransaction, me: string): TxRow {
 }
 
 function describe(t: ApiTransaction, me: string, out: boolean, amt: bigint): TxRow {
-  const who = t.evm ? "Validator" : "Delegate";
+  const who = "Validator";
   if (t.evm && t.typeGroup === MS_GROUP) {
     switch (t.type) {
       case MS_TYPE.validatorUpdate:
@@ -64,7 +64,7 @@ function describe(t: ApiTransaction, me: string, out: boolean, amt: bigint): TxR
       case 2:
         // Mainsail locks the registration amount in the consensus contract
         if (t.evm) return { label: "Validator registration", icon: "star", dir: "out", amount: -amt };
-        return { label: `Delegate registration: ${t.asset?.delegate?.username ?? ""}`, icon: "star", dir: "other", amount: 0n };
+        return { label: `Validator registration: ${t.asset?.delegate?.username ?? ""}`, icon: "star", dir: "other", amount: 0n };
       case 7:
         return { label: `${who} resignation`, icon: "x", dir: "other", amount: t.evm ? amt : 0n };
       case 4:
