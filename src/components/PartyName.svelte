@@ -27,6 +27,7 @@
 
 <button
   class="xlink"
+  class:grow={fill && !own && !delegate}
   title={own ? `${address} · open ${own.name}` : `${address} · open in explorer`}
   onclick={(e) => {
     e.stopPropagation();
@@ -48,6 +49,10 @@
 </button>
 
 <style>
+  /* a filling address takes the rest of the line; its icon then sits at the right edge */
+  .grow {
+    flex: 1 1 0;
+  }
   .own {
     font-weight: 600;
   }
