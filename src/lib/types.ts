@@ -60,7 +60,7 @@ export const NETWORKS: Record<NetworkId, NetworkDef> = {
     defaultTxApi: "https://testnet.mainsailhq.com/tx/api",
     defaultRpc: "https://testnet.mainsailhq.com/rpc/api",
     faucet: "https://faucet-demo.mainsailhq.com/",
-    explorer: "https://explorer-demo.mainsailhq.com",
+    explorer: "https://mainsail.geops.net",
     addressPrefix: "0x",
     hasFiatValue: false,
     producer: "validator",

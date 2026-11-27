@@ -68,7 +68,7 @@ A lightweight, open-source desktop wallet for the [ARK](https://ark.io) blockcha
   you typed, and nothing is logged.
 - The UI runs under a strict Content Security Policy (no remote or inline scripts, no network access except through
   the Rust core) with frozen JavaScript prototypes. It may only open a fixed list of links (the explorers
-  ark.geops.net and the Mainsail testnet explorer, the testnet faucet, the exchanges' order pages and the payout chains' explorers) and write to the clipboard.
+  ark.geops.net and mainsail.geops.net, the testnet faucet, the exchanges' order pages and the payout chains' explorers) and write to the clipboard.
 - The Exchange's service is reached only through the Rust core, on three fixed paths. Nothing about your wallets or
   passphrases is sent to it: only the amount, coin, network, payout address and refund (your ARK) address of an order.
 - Limits: the passphrase passes through the webview as a JavaScript string, which can't be wiped from memory (it is

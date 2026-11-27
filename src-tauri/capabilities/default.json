@@ -13,7 +13,7 @@
         {
           "url": "https://ark.geops.net/*"
         },
-        { "url": "https://explorer-demo.mainsailhq.com/*" },
+        { "url": "https://mainsail.geops.net/*" },
         { "url": "https://faucet-demo.mainsailhq.com/" },
         { "url": "https://faucet-demo.mainsailhq.com/*" },
         { "url": "https://changelly.com/*" },
