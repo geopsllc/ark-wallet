@@ -137,6 +137,12 @@ a:hover {
 .xlink > svg {
   flex-shrink: 0;
 }
+/* .xlink's "all: unset" would otherwise drop the monospace font of "xlink mono" links (tx IDs), so every row
+   would truncate to a different width */
+.xlink.mono {
+  font-family: var(--mono);
+  font-size: 0.92em;
+}
 .xlink:hover {
   text-decoration: underline;
   text-underline-offset: 2px;

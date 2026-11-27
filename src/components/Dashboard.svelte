@@ -98,7 +98,7 @@
               <span class="badge brand">Validator</span>
             {/if}
           </div>
-          <div class="faint small"><Address address={w.address} /></div>
+          <div class="faint small"><Address address={w.address} center /></div>
           <div class="wb num">{d ? formatArk(d.balance, 4, 2) : "…"}<Sym network={w.network} /></div>
           <div class="row small">
             <span class="fiatv num">{f !== null ? formatFiat(f, cur) : ""}</span>
