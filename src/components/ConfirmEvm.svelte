@@ -39,7 +39,7 @@
       case "transfer":
         return { kind: "transfer", amount: f.amount, recipientId: f.recipientId, memo: f.vendorField };
       case "multipayment":
-        return { kind: "multipayment", payments: f.payments };
+        return { kind: "multipayment", payments: f.payments, memo: f.vendorField };
       case "vote": {
         const plus = (f.votes ?? []).find((v) => v.startsWith("+"));
         return plus ? { kind: "vote", vote: plus.slice(1) } : { kind: "unvote" };

@@ -24,7 +24,7 @@ A lightweight, open-source desktop wallet for the [ARK](https://ark.io) blockcha
 - **Balances & portfolio**: live balances, total portfolio value and a 7-day ARK price chart (CoinGecko, 14 currencies).
 - **Transactions**: paginated history with All / Received / Sent filters, memos, multipayment and vote details, and
   links to the explorer.
-- **Send**: transfers and multipayments (up to 64 recipients) with an optional memo (vendor field, 255 bytes).
+- **Send**: transfers and multipayments (up to 64 recipients) with an optional memo (vendor field, 255 bytes; on Mainsail it is appended once after a multipayment's arguments).
 - **Vote**: vote, unvote, or **switch your vote in a single transaction** (`["-old", "+new"]`). Searchable validator list
   with rank, votes and approval.
 - **Fees**: every transaction shows the exact **minimum fee** the network accepts, calculated from its size (memo

@@ -341,7 +341,7 @@ pub fn proof_of_possession(sk: &blst::min_pk::SecretKey, chain_id: u64, registra
 
 // ---------- building ----------
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Payment {
     /// arktoshi
@@ -398,6 +398,15 @@ pub fn valid_username(u: &str) -> bool {
     (1..=20).contains(&u.len()) && ok_chars && !u.starts_with('_') && !u.ends_with('_') && !u.contains("__")
 }
 
+/// The memo as calldata: the data of a transfer, or appended after a multipayment's arguments.
+fn memo_bytes(req: &CallRequest) -> Result<Vec<u8>, String> {
+    let memo = req.memo.as_deref().map(str::trim).unwrap_or("");
+    if memo.len() > 255 {
+        return Err("The memo is longer than 255 bytes".into());
+    }
+    Ok(memo.as_bytes().to_vec())
+}
+
 /// The contract call (or plain transfer) a request describes: (to, value in wei, data).
 pub fn call_for(req: &CallRequest) -> Result<([u8; 20], u128, Vec<u8>), String> {
     match req.kind.as_str() {
@@ -407,11 +416,7 @@ pub fn call_for(req: &CallRequest) -> Result<([u8; 20], u128, Vec<u8>), String> 
                 return Err("Amount must be greater than zero".into());
             }
             let to = parse_address(req.recipient_id.as_deref().ok_or("Missing recipient")?)?;
-            let memo = req.memo.as_deref().map(str::trim).unwrap_or("");
-            if memo.len() > 255 {
-                return Err("The memo is longer than 255 bytes".into());
-            }
-            Ok((to, value, memo.as_bytes().to_vec()))
+            Ok((to, value, memo_bytes(req)?))
         }
         "multipayment" => {
             let payments = req.payments.as_ref().ok_or("Missing payments")?;
@@ -429,7 +434,10 @@ pub fn call_for(req: &CallRequest) -> Result<([u8; 20], u128, Vec<u8>), String> 
                 amounts.push(a);
             }
             let total = amounts.iter().try_fold(0u128, |s, a| s.checked_add(*a)).ok_or("Total is too large")?;
-            let data = encode_call("pay(address[],uint256[])", &[Arg::AddressArray(&to), Arg::UintArray(&amounts)]);
+            let mut data = encode_call("pay(address[],uint256[])", &[Arg::AddressArray(&to), Arg::UintArray(&amounts)]);
+            // the memo goes after the ABI arguments: the contract ignores the extra bytes, so it costs
+            // only its calldata gas (plus a few), once per transaction (as ark-tbw does on testnet)
+            data.extend_from_slice(&memo_bytes(req)?);
             Ok((parse_contract(MULTIPAYMENT), total, data))
         }
         "vote" => {
@@ -686,7 +694,17 @@ mod tests {
         assert!(c.is_err());
         let to = [parse_address("0x6F0182a0cc707b055322CcF6d4CB6a5Aff1aEb22").unwrap(), parse_address("0xC3bBE9B1CeE1ff85Ad72b87414B0E9B7F2366763").unwrap()];
         let data = encode_call("pay(address[],uint256[])", &[Arg::AddressArray(&to), Arg::UintArray(&[100_000, 200_000])]);
-        assert_eq!(hex::encode(data), f["data"]["data"].as_str().unwrap());
+        assert_eq!(hex::encode(&data), f["data"]["data"].as_str().unwrap());
+        // a memo is appended once after the arguments
+        let pays = vec![
+            Payment { amount: "1".into(), recipient_id: "0x6F0182a0cc707b055322CcF6d4CB6a5Aff1aEb22".into() },
+            Payment { amount: "2".into(), recipient_id: "0xC3bBE9B1CeE1ff85Ad72b87414B0E9B7F2366763".into() },
+        ];
+        let plain = call_for(&CallRequest { kind: "multipayment".into(), payments: Some(pays.clone()), ..Default::default() }).unwrap();
+        let memo = call_for(&CallRequest { kind: "multipayment".into(), payments: Some(pays.clone()), memo: Some(" Thanks for your votes ".into()), ..Default::default() }).unwrap();
+        assert_eq!(memo.2, [plain.2.clone(), b"Thanks for your votes".to_vec()].concat());
+        assert_eq!((memo.0, memo.1), (plain.0, plain.1));
+        assert!(call_for(&CallRequest { kind: "multipayment".into(), payments: Some(pays), memo: Some("x".repeat(256)), ..Default::default() }).is_err());
         let f = fixture("username-registration");
         let c = call_for(&CallRequest { kind: "usernameRegistration".into(), username: Some("fixture".into()), ..Default::default() }).unwrap();
         assert_eq!(hex::encode(c.2), f["data"]["data"].as_str().unwrap());

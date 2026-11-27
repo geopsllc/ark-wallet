@@ -101,6 +101,18 @@ function decodeArray(d: string, offsetWord: number): string[] {
   return out;
 }
 
+/** Where the ABI arguments end (selector included), in bytes: past the head and every dynamic array it points to. */
+function abiEnd(d: string): number {
+  const heads = 2; // pay(address[],uint256[])
+  let end = 4 + heads * 32;
+  for (let i = 0; i < heads; i++) {
+    const off = Number(num(word(d, i)));
+    const len = Number(num(wordAt(d, off)));
+    if (Number.isFinite(off) && Number.isFinite(len)) end = Math.max(end, 4 + off + 32 + len * 32);
+  }
+  return end;
+}
+
 function decodeString(d: string): string {
   try {
     const off = Number(num(word(d, 0)));
@@ -170,6 +182,9 @@ function mapTx(t: any): ApiTransaction {
     const amounts = decodeArray(data, 1).map((w) => weiToArktoshi(num(w)));
     set(1, 6, { payments: recipients.map((r, i) => ({ recipientId: r, amount: amounts[i] ?? "0" })) });
     if (failed) tx.asset.payments = [];
+    // a memo appended after the ABI arguments (the contract ignores the extra bytes)
+    const memo = memoText(data.slice(abiEnd(data) * 2));
+    if (memo) tx.vendorField = memo;
   } else if (sameAddress(to, USERNAMES)) {
     if (sel === SEL.username) set(MS_GROUP, MS_TYPE.usernameRegistration, { username: decodeString(data) });
     else if (sel === SEL.usernameResign) set(MS_GROUP, MS_TYPE.usernameResignation);
