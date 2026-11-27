@@ -334,29 +334,26 @@
     overflow: hidden;
     line-height: 1.35;
   }
-  /* Column plan: Transaction gets exactly what its longest line needs (~272px in the app's fonts),
-     Tx ID 144 + Amount 172 + Date 104 are fixed, and Memo takes whatever is left, so extra width goes to
-     the memo instead of leaving a gap after the transaction. Memo shows once it can have >= 120px
-     (692 + 120 = 812); without it, Transaction takes the slack. Date and Tx ID drop out when keeping them
-     would push Transaction below 272px. */
-  .c-tx {
-    width: 272px;
+  /* Column plan: Memo is exactly wide enough for "Thanks for your votes" on one line (127px of text + 24px
+     padding = 152px; longer memos wrap onto a second line), Tx ID 144 + Amount 216 (fits a Mainsail gas fee
+     plus "(sender)") + Date 104 are fixed, and Transaction takes whatever is left. Memo shows while
+     Transaction can keep >= 200px (200 + 152 + 464 = 816, so it still shows in a 1120px window). Date and Tx ID drop out when keeping them
+     would push Transaction below 228px. */
+  .c-memo {
+    width: 152px;
   }
   .c-id {
     width: 144px;
   }
   .c-amt {
-    width: 172px;
+    width: 216px;
   }
   .c-date {
     width: 104px;
   }
-  @container (max-width: 812px) {
+  @container (max-width: 816px) {
     .c-memo {
       display: none;
-    }
-    .c-tx {
-      width: auto;
     }
   }
   @container (max-width: 692px) {
