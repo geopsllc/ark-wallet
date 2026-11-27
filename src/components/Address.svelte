@@ -56,10 +56,15 @@
     const keep = Math.max(fit - 1, 4); // one slot for "…"
     return address.slice(0, Math.ceil(keep / 2)) + "…" + address.slice(address.length - Math.floor(keep / 2));
   });
+  // the leftover sliver (< 1 character) is spread over the letters, so a cut address starts right after "from"
+  // and still ends flush right
+  const spacing = $derived(
+    within && shown !== address && charW ? Math.max(0, Math.min(1.5, (avail - shown.length * charW) / shown.length)) : 0,
+  );
 </script>
 
 {#if center}
-  <span class="addr mono fill {cls}" class:cut={shown !== address} style:width={within && shown !== address ? `${avail}px` : null} style:flex={within && shown !== address ? "none" : null} bind:this={box} title={address}>{shown}<span class="probe" bind:this={probe} aria-hidden="true">{address}</span></span>
+  <span class="addr mono fill {cls}" class:cut={shown !== address} style:width={within && shown !== address ? `${avail}px` : null} style:flex={within && shown !== address ? "none" : null} style:letter-spacing={spacing ? `${spacing}px` : null} bind:this={box} title={address}>{shown}<span class="probe" bind:this={probe} aria-hidden="true">{address}</span></span>
 {:else}
   <span class="addr mono {cls}" title={address}><span class="head">{head}</span><span class="end">{end}</span></span>
 {/if}
@@ -87,12 +92,9 @@
     overflow: hidden;
     position: relative;
   }
-  /* when cut, the leftover sliver (< 1 character) goes before the text, so cut addresses all end flush right */
-  .cut {
-    text-align: right;
-  }
   .probe {
     position: absolute;
+    letter-spacing: 0; /* measures the plain character width, unaffected by the spacing above */
     visibility: hidden;
     left: 0;
     top: 0;
