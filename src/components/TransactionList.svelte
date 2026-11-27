@@ -229,11 +229,11 @@
                     {#if r.votes}
                       {#each r.votes.filter((v) => v.length > 1) as v, i}{i > 0 ? " → " : ""}{v[0] === "+" ? "for " : "from "}<DelegateName network={wallet.network} publicKey={v.slice(1)} link />{/each}
                     {:else if r.counterparty}
-                      {r.dir === "in" ? "from" : "to"} <PartyName network={wallet.network} address={r.counterparty} />
+                      <span class="pre">{r.dir === "in" ? "from" : "to"}</span><PartyName network={wallet.network} address={r.counterparty} />
                     {:else if payments.length}
-                      <span class="mp"><span class="mp-to">to&nbsp;</span><PartyName network={wallet.network} address={shownRecipient(payments)} chars={5} />{#if payments.length > 1}<span class="mp-more">&nbsp;+ {payments.length - 1} more</span>{/if}</span>
+                      <span class="mp"><span class="pre">to</span><PartyName network={wallet.network} address={shownRecipient(payments)} />{#if payments.length > 1}<span class="mp-more">&nbsp;+ {payments.length - 1}</span>{/if}</span>
                     {:else}
-                      by <PartyName network={wallet.network} address={t.sender} />
+                      <span class="pre">by</span><PartyName network={wallet.network} address={t.sender} />
                     {/if}
                   </div>
                 </div>
@@ -280,7 +280,12 @@
 </div>
 
 <style>
-  /* multipayment line: the recipient is already shortened (5…5), so it never gets a second "…";
+  /* "from" / "to" / "by" take the same width, so the addresses after them start in one column */
+  .pre {
+    display: inline-block;
+    min-width: 2.6em;
+  }
+  /* multipayment line: the recipient is already shortened (7…7), so it never gets a second "…";
      if the column is too narrow, the line itself ends in "…" after the address */
   .mp {
     display: block;
